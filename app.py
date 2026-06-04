@@ -197,6 +197,14 @@ def pct_change(new, old) -> str:
     return "—"
 
 
+# ── Color helper ─────────────────────────────────────────────────────────────
+def rgba(hex_color: str, alpha: float) -> str:
+    """Convert #rrggbb + alpha float → rgba() string for Plotly."""
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
+
 # ── Projection math ───────────────────────────────────────────────────────────
 def compute_cagr(values: list, years: list | None = None, n_years: int = 5) -> float:
     """
@@ -286,7 +294,7 @@ def make_metric_chart(
     fig.add_trace(go.Scatter(
         x=hist_x, y=hist_y, name="Historical",
         line=dict(color=color, width=2.5),
-        fill="tozeroy", fillcolor=color + "18",
+        fill="tozeroy", fillcolor=rgba(color, 0.09),
         connectgaps=False, mode="lines+markers",
         marker=dict(size=4), hovertemplate="%{x}: %{y:,.1f}<extra></extra>",
     ))
@@ -336,7 +344,7 @@ def make_price_chart(hist_df: pd.DataFrame, ticker: str, color: str) -> go.Figur
     fig.add_trace(go.Scatter(
         x=hist_df.index, y=hist_df["Close"],
         name="Close", line=dict(color=color, width=2),
-        fill="tozeroy", fillcolor=color + "15",
+        fill="tozeroy", fillcolor=rgba(color, 0.08),
         hovertemplate="%{x|%b %d, %Y}: $%{y:.2f}<extra></extra>",
     ))
     fig.update_layout(
@@ -385,7 +393,7 @@ def make_projection_summary_chart(
 
     fig.add_trace(go.Bar(
         x=years_str, y=safe_list(rev_base), name="Revenue (Base)",
-        marker_color=color + "cc", offsetgroup=0,
+        marker_color=rgba(color, 0.80), offsetgroup=0,
     ))
     fig.add_trace(go.Bar(
         x=years_str, y=safe_list(ni_base), name="Net Income (Base)",
@@ -639,7 +647,7 @@ def page_stock_detail(df: pd.DataFrame) -> None:
         rev_val = fmt_m(yr_row["revenue_m"].values[0]) if has_data else "—"
         ni_val  = fmt_m(yr_row["net_income_m"].values[0]) if has_data else "—"
         with yr_cols[i]:
-            bg = color + "15" if has_data else "#080c14"
+            bg = rgba(color, 0.08) if has_data else "#080c14"
             st.markdown(f"""
             <div style="background:{bg};border:1px solid #1c2438;border-radius:4px;
                         padding:0.4rem 0.35rem;text-align:center;border-top:2px solid {color if has_data else '#1c2438'}">
