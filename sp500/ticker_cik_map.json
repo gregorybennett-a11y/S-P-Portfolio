@@ -1,0 +1,2437 @@
+{
+  "A": {
+    "cik": "0001090872",
+    "company": "Agilent Technologies",
+    "last_10k": "2025-12-22"
+  },
+  "AAPL": {
+    "cik": "0000320193",
+    "company": "Apple Inc.",
+    "last_10k": "2025-10-31"
+  },
+  "ABBV": {
+    "cik": "0001551152",
+    "company": "AbbVie",
+    "last_10k": "2026-02-20"
+  },
+  "ABNB": {
+    "cik": "0001559720",
+    "company": "Airbnb",
+    "last_10k": "2026-02-12"
+  },
+  "ABT": {
+    "cik": "0000001800",
+    "company": "Abbott Laboratories",
+    "last_10k": "2026-02-20"
+  },
+  "ACGL": {
+    "cik": "0000947484",
+    "company": "Arch Capital Group",
+    "last_10k": "2026-02-26"
+  },
+  "ACN": {
+    "cik": "0001467373",
+    "company": "Accenture",
+    "last_10k": "2025-10-10"
+  },
+  "ADBE": {
+    "cik": "0000796343",
+    "company": "Adobe Inc.",
+    "last_10k": "2026-01-15"
+  },
+  "ADI": {
+    "cik": "0000006281",
+    "company": "Analog Devices",
+    "last_10k": "2025-11-25"
+  },
+  "ADM": {
+    "cik": "0000007084",
+    "company": "Archer Daniels Midland",
+    "last_10k": "2026-02-17"
+  },
+  "ADP": {
+    "cik": "0000008670",
+    "company": "Automatic Data Processing",
+    "last_10k": "2025-08-06"
+  },
+  "ADSK": {
+    "cik": "0000769397",
+    "company": "Autodesk",
+    "last_10k": "2026-03-03"
+  },
+  "AEE": {
+    "cik": "0001002910",
+    "company": "Ameren",
+    "last_10k": "2026-02-18"
+  },
+  "AEP": {
+    "cik": "0000004904",
+    "company": "American Electric Power",
+    "last_10k": "2026-02-12"
+  },
+  "AES": {
+    "cik": "0000874761",
+    "company": "AES Corporation",
+    "last_10k": "2026-03-02"
+  },
+  "AFL": {
+    "cik": "0000004977",
+    "company": "Aflac",
+    "last_10k": "2026-02-25"
+  },
+  "AIG": {
+    "cik": "0000005272",
+    "company": "American International Group",
+    "last_10k": "2026-02-12"
+  },
+  "AIZ": {
+    "cik": "0001267238",
+    "company": "Assurant",
+    "last_10k": "2026-02-19"
+  },
+  "AJG": {
+    "cik": "0000354190",
+    "company": "Arthur J. Gallagher",
+    "last_10k": "2026-02-17"
+  },
+  "AKAM": {
+    "cik": "0001086222",
+    "company": "Akamai Technologies",
+    "last_10k": "2026-02-20"
+  },
+  "ALB": {
+    "cik": "0000915913",
+    "company": "Albemarle Corporation",
+    "last_10k": "2026-02-11"
+  },
+  "ALGN": {
+    "cik": "0001097149",
+    "company": "Align Technology",
+    "last_10k": "2026-02-27"
+  },
+  "ALL": {
+    "cik": "0000899051",
+    "company": "Allstate",
+    "last_10k": "2026-02-20"
+  },
+  "ALLE": {
+    "cik": "0001579241",
+    "company": "Allegion",
+    "last_10k": "2026-02-17"
+  },
+  "AMAT": {
+    "cik": "0000006951",
+    "company": "Applied Materials",
+    "last_10k": "2025-12-12"
+  },
+  "AMCR": {
+    "cik": "0001748790",
+    "company": "Amcor",
+    "last_10k": "2025-08-15"
+  },
+  "AMD": {
+    "cik": "0000002488",
+    "company": "Advanced Micro Devices",
+    "last_10k": "2026-02-04"
+  },
+  "AME": {
+    "cik": "0001037868",
+    "company": "Ametek",
+    "last_10k": "2026-02-17"
+  },
+  "AMGN": {
+    "cik": "0000318154",
+    "company": "Amgen",
+    "last_10k": "2026-02-13"
+  },
+  "AMP": {
+    "cik": "0000820027",
+    "company": "Ameriprise Financial",
+    "last_10k": "2026-02-19"
+  },
+  "AMT": {
+    "cik": "0001053507",
+    "company": "American Tower",
+    "last_10k": "2026-02-24"
+  },
+  "AMZN": {
+    "cik": "0001018724",
+    "company": "Amazon",
+    "last_10k": "2026-02-06"
+  },
+  "ANET": {
+    "cik": "0001596532",
+    "company": "Arista Networks",
+    "last_10k": "2026-02-17"
+  },
+  "AON": {
+    "cik": "0000315293",
+    "company": "Aon plc",
+    "last_10k": "2026-02-13"
+  },
+  "AOS": {
+    "cik": "0000091142",
+    "company": "A. O. Smith",
+    "last_10k": "2026-02-10"
+  },
+  "APA": {
+    "cik": "0001841666",
+    "company": "APA Corporation",
+    "last_10k": "2026-02-26"
+  },
+  "APD": {
+    "cik": "0000002969",
+    "company": "Air Products",
+    "last_10k": "2025-11-20"
+  },
+  "APH": {
+    "cik": "0000820313",
+    "company": "Amphenol",
+    "last_10k": "2026-02-11"
+  },
+  "APO": {
+    "cik": "0001858681",
+    "company": "Apollo Global Management",
+    "last_10k": "2026-02-25"
+  },
+  "APP": {
+    "cik": "0001751008",
+    "company": "AppLovin",
+    "last_10k": "2026-02-19"
+  },
+  "APTV": {
+    "cik": "0001521332",
+    "company": "Aptiv",
+    "last_10k": "2026-02-06"
+  },
+  "ARE": {
+    "cik": "0001035443",
+    "company": "Alexandria Real Estate",
+    "last_10k": "2026-01-26"
+  },
+  "ARES": {
+    "cik": "0001176948",
+    "company": "Ares Management",
+    "last_10k": "2026-02-25"
+  },
+  "ATO": {
+    "cik": "0000731802",
+    "company": "Atmos Energy",
+    "last_10k": "2025-11-14"
+  },
+  "AVB": {
+    "cik": "0000915912",
+    "company": "AvalonBay Communities",
+    "last_10k": "2026-02-27"
+  },
+  "AVGO": {
+    "cik": "0001730168",
+    "company": "Broadcom",
+    "last_10k": "2025-12-18"
+  },
+  "AVY": {
+    "cik": "0000008818",
+    "company": "Avery Dennison",
+    "last_10k": "2026-02-25"
+  },
+  "AWK": {
+    "cik": "0001410636",
+    "company": "American Water Works",
+    "last_10k": "2026-02-18"
+  },
+  "AXON": {
+    "cik": "0001069183",
+    "company": "Axon Enterprise",
+    "last_10k": "2026-02-25"
+  },
+  "AXP": {
+    "cik": "0000004962",
+    "company": "American Express",
+    "last_10k": "2026-02-06"
+  },
+  "AZO": {
+    "cik": "0000866787",
+    "company": "AutoZone",
+    "last_10k": "2025-10-27"
+  },
+  "BA": {
+    "cik": "0000012927",
+    "company": "Boeing",
+    "last_10k": "2026-01-30"
+  },
+  "BAC": {
+    "cik": "0000070858",
+    "company": "Bank of America",
+    "last_10k": "2026-02-25"
+  },
+  "BALL": {
+    "cik": "0000009389",
+    "company": "Ball Corporation",
+    "last_10k": "2026-02-19"
+  },
+  "BAX": {
+    "cik": "0000010456",
+    "company": "Baxter International",
+    "last_10k": "2026-02-12"
+  },
+  "BBY": {
+    "cik": "0000764478",
+    "company": "Best Buy",
+    "last_10k": "2026-03-18"
+  },
+  "BDX": {
+    "cik": "0000010795",
+    "company": "Becton Dickinson",
+    "last_10k": "2025-11-25"
+  },
+  "BEN": {
+    "cik": "0000038777",
+    "company": "Franklin Resources",
+    "last_10k": "2025-11-10"
+  },
+  "BF-B": {
+    "cik": "0000014693",
+    "company": "Brown-Forman",
+    "last_10k": "2025-06-13"
+  },
+  "BG": {
+    "cik": "0001996862",
+    "company": "Bunge Global",
+    "last_10k": "2026-02-19"
+  },
+  "BIIB": {
+    "cik": "0000875045",
+    "company": "Biogen",
+    "last_10k": "2026-02-06"
+  },
+  "BK": {
+    "cik": "0001390777",
+    "company": "BNY Mellon",
+    "last_10k": "2026-02-25"
+  },
+  "BKNG": {
+    "cik": "0001075531",
+    "company": "Booking Holdings",
+    "last_10k": "2026-02-18"
+  },
+  "BKR": {
+    "cik": "0001701605",
+    "company": "Baker Hughes",
+    "last_10k": "2026-02-05"
+  },
+  "BLDR": {
+    "cik": "0001316835",
+    "company": "Builders FirstSource",
+    "last_10k": "2026-02-17"
+  },
+  "BLK": {
+    "cik": "0002012383",
+    "company": "BlackRock",
+    "last_10k": "2026-02-25"
+  },
+  "BMY": {
+    "cik": "0000014272",
+    "company": "Bristol Myers Squibb",
+    "last_10k": "2026-02-11"
+  },
+  "BR": {
+    "cik": "0001383312",
+    "company": "Broadridge Financial",
+    "last_10k": "2025-08-05"
+  },
+  "BRK-B": {
+    "cik": "0001067983",
+    "company": "Berkshire Hathaway",
+    "last_10k": "2026-03-02"
+  },
+  "BRO": {
+    "cik": "0000079282",
+    "company": "Brown & Brown",
+    "last_10k": "2026-02-12"
+  },
+  "BSX": {
+    "cik": "0000885725",
+    "company": "Boston Scientific",
+    "last_10k": "2026-02-17"
+  },
+  "BX": {
+    "cik": "0001393818",
+    "company": "Blackstone Inc.",
+    "last_10k": "2026-02-27"
+  },
+  "BXP": {
+    "cik": "0001037540",
+    "company": "BXP Inc.",
+    "last_10k": "2026-02-27"
+  },
+  "C": {
+    "cik": "0000831001",
+    "company": "Citigroup",
+    "last_10k": "2026-02-20"
+  },
+  "CAG": {
+    "cik": "0000023217",
+    "company": "Conagra Brands",
+    "last_10k": "2025-07-10"
+  },
+  "CAH": {
+    "cik": "0000721371",
+    "company": "Cardinal Health",
+    "last_10k": "2025-08-12"
+  },
+  "CARR": {
+    "cik": "0001783180",
+    "company": "Carrier Global",
+    "last_10k": "2026-02-05"
+  },
+  "CAT": {
+    "cik": "0000018230",
+    "company": "Caterpillar Inc.",
+    "last_10k": "2026-02-13"
+  },
+  "CB": {
+    "cik": "0000896159",
+    "company": "Chubb Limited",
+    "last_10k": "2026-02-27"
+  },
+  "CBOE": {
+    "cik": "0001374310",
+    "company": "Cboe Global Markets",
+    "last_10k": "2026-02-20"
+  },
+  "CBRE": {
+    "cik": "0001138118",
+    "company": "CBRE Group",
+    "last_10k": "2026-02-12"
+  },
+  "CCI": {
+    "cik": "0001051470",
+    "company": "Crown Castle",
+    "last_10k": "2026-02-23"
+  },
+  "CCL": {
+    "cik": "0000815097",
+    "company": "Carnival",
+    "last_10k": "2026-01-27"
+  },
+  "CDNS": {
+    "cik": "0000813672",
+    "company": "Cadence Design Systems",
+    "last_10k": "2026-02-19"
+  },
+  "CDW": {
+    "cik": "0001402057",
+    "company": "CDW Corporation",
+    "last_10k": "2026-02-20"
+  },
+  "CEG": {
+    "cik": "0001868275",
+    "company": "Constellation Energy",
+    "last_10k": "2026-02-24"
+  },
+  "CF": {
+    "cik": "0001324404",
+    "company": "CF Industries",
+    "last_10k": "2026-02-25"
+  },
+  "CFG": {
+    "cik": "0000759944",
+    "company": "Citizens Financial Group",
+    "last_10k": "2026-02-12"
+  },
+  "CHD": {
+    "cik": "0000313927",
+    "company": "Church & Dwight",
+    "last_10k": "2026-02-12"
+  },
+  "CHRW": {
+    "cik": "0001043277",
+    "company": "C.H. Robinson",
+    "last_10k": "2026-02-13"
+  },
+  "CHTR": {
+    "cik": "0001091667",
+    "company": "Charter Communications",
+    "last_10k": "2026-01-30"
+  },
+  "CI": {
+    "cik": "0001739940",
+    "company": "Cigna",
+    "last_10k": "2026-02-26"
+  },
+  "CIEN": {
+    "cik": "0000936395",
+    "company": "Ciena",
+    "last_10k": "2025-12-12"
+  },
+  "CINF": {
+    "cik": "0000020286",
+    "company": "Cincinnati Financial",
+    "last_10k": "2026-02-23"
+  },
+  "CL": {
+    "cik": "0000021665",
+    "company": "Colgate-Palmolive",
+    "last_10k": "2026-02-23"
+  },
+  "CLX": {
+    "cik": "0000021076",
+    "company": "Clorox",
+    "last_10k": "2025-08-08"
+  },
+  "CMCSA": {
+    "cik": "0001166691",
+    "company": "Comcast",
+    "last_10k": "2026-02-03"
+  },
+  "CME": {
+    "cik": "0001156375",
+    "company": "CME Group",
+    "last_10k": "2026-02-26"
+  },
+  "CMG": {
+    "cik": "0001058090",
+    "company": "Chipotle Mexican Grill",
+    "last_10k": "2026-02-04"
+  },
+  "CMI": {
+    "cik": "0000026172",
+    "company": "Cummins",
+    "last_10k": "2026-02-10"
+  },
+  "CMS": {
+    "cik": "0000811156",
+    "company": "CMS Energy",
+    "last_10k": "2026-02-10"
+  },
+  "CNC": {
+    "cik": "0001071739",
+    "company": "Centene Corporation",
+    "last_10k": "2026-02-17"
+  },
+  "CNP": {
+    "cik": "0001130310",
+    "company": "CenterPoint Energy",
+    "last_10k": "2026-02-19"
+  },
+  "COF": {
+    "cik": "0000927628",
+    "company": "Capital One",
+    "last_10k": "2026-02-19"
+  },
+  "COIN": {
+    "cik": "0001679788",
+    "company": "Coinbase",
+    "last_10k": "2026-02-12"
+  },
+  "COO": {
+    "cik": "0000711404",
+    "company": "Cooper Companies",
+    "last_10k": "2025-12-05"
+  },
+  "COP": {
+    "cik": "0001163165",
+    "company": "ConocoPhillips",
+    "last_10k": "2026-02-17"
+  },
+  "COR": {
+    "cik": "0001140859",
+    "company": "Cencora",
+    "last_10k": "2025-11-25"
+  },
+  "COST": {
+    "cik": "0000909832",
+    "company": "Costco",
+    "last_10k": "2025-10-08"
+  },
+  "CPAY": {
+    "cik": "0001175454",
+    "company": "Corpay",
+    "last_10k": "2026-02-27"
+  },
+  "CPB": {
+    "cik": "0000016732",
+    "company": "Campbells Company",
+    "last_10k": "2025-09-18"
+  },
+  "CPRT": {
+    "cik": "0000900075",
+    "company": "Copart",
+    "last_10k": "2025-09-26"
+  },
+  "CPT": {
+    "cik": "0000906345",
+    "company": "Camden Property Trust",
+    "last_10k": "2026-02-12"
+  },
+  "CRL": {
+    "cik": "0001100682",
+    "company": "Charles River Laboratories",
+    "last_10k": "2026-02-18"
+  },
+  "CRM": {
+    "cik": "0001108524",
+    "company": "Salesforce",
+    "last_10k": "2026-03-02"
+  },
+  "CRWD": {
+    "cik": "0001535527",
+    "company": "CrowdStrike",
+    "last_10k": "2026-03-05"
+  },
+  "CSCO": {
+    "cik": "0000858877",
+    "company": "Cisco",
+    "last_10k": "2025-09-03"
+  },
+  "CSGP": {
+    "cik": "0001057352",
+    "company": "CoStar Group",
+    "last_10k": "2026-02-26"
+  },
+  "CSX": {
+    "cik": "0000277948",
+    "company": "CSX Corporation",
+    "last_10k": "2026-02-12"
+  },
+  "CTAS": {
+    "cik": "0000723254",
+    "company": "Cintas",
+    "last_10k": "2025-07-28"
+  },
+  "CTRA": {
+    "cik": "0000858470",
+    "company": "Coterra",
+    "last_10k": "2026-02-27"
+  },
+  "CTSH": {
+    "cik": "0001058290",
+    "company": "Cognizant",
+    "last_10k": "2026-02-12"
+  },
+  "CTVA": {
+    "cik": "0001755672",
+    "company": "Corteva",
+    "last_10k": "2026-02-12"
+  },
+  "CVS": {
+    "cik": "0000064803",
+    "company": "CVS Health",
+    "last_10k": "2026-02-10"
+  },
+  "CVX": {
+    "cik": "0000093410",
+    "company": "Chevron Corporation",
+    "last_10k": "2026-02-24"
+  },
+  "D": {
+    "cik": "0000715957",
+    "company": "Dominion Energy",
+    "last_10k": "2026-02-23"
+  },
+  "DAL": {
+    "cik": "0000027904",
+    "company": "Delta Air Lines",
+    "last_10k": "2026-02-11"
+  },
+  "DASH": {
+    "cik": "0001792789",
+    "company": "DoorDash",
+    "last_10k": "2026-02-18"
+  },
+  "DD": {
+    "cik": "0001666700",
+    "company": "DuPont",
+    "last_10k": "2026-02-17"
+  },
+  "DDOG": {
+    "cik": "0001561550",
+    "company": "Datadog",
+    "last_10k": "2026-02-18"
+  },
+  "DE": {
+    "cik": "0000315189",
+    "company": "Deere & Company",
+    "last_10k": "2025-12-18"
+  },
+  "DECK": {
+    "cik": "0000910521",
+    "company": "Deckers Brands",
+    "last_10k": "2026-05-22"
+  },
+  "DELL": {
+    "cik": "0001571996",
+    "company": "Dell Technologies",
+    "last_10k": "2026-03-16"
+  },
+  "DG": {
+    "cik": "0000029534",
+    "company": "Dollar General",
+    "last_10k": "2026-03-20"
+  },
+  "DGX": {
+    "cik": "0001022079",
+    "company": "Quest Diagnostics",
+    "last_10k": "2026-02-26"
+  },
+  "DHI": {
+    "cik": "0000882184",
+    "company": "D. R. Horton",
+    "last_10k": "2025-11-19"
+  },
+  "DHR": {
+    "cik": "0000313616",
+    "company": "Danaher Corporation",
+    "last_10k": "2026-02-24"
+  },
+  "DIS": {
+    "cik": "0001744489",
+    "company": "Walt Disney Company",
+    "last_10k": "2025-11-13"
+  },
+  "DLR": {
+    "cik": "0001297996",
+    "company": "Digital Realty",
+    "last_10k": "2026-02-13"
+  },
+  "DLTR": {
+    "cik": "0000935703",
+    "company": "Dollar Tree",
+    "last_10k": "2026-03-16"
+  },
+  "DOC": {
+    "cik": "0000765880",
+    "company": "Healthpeak Properties",
+    "last_10k": "2026-02-03"
+  },
+  "DOV": {
+    "cik": "0000029905",
+    "company": "Dover Corporation",
+    "last_10k": "2026-02-13"
+  },
+  "DOW": {
+    "cik": "0001751788",
+    "company": "Dow Inc.",
+    "last_10k": "2026-02-03"
+  },
+  "DPZ": {
+    "cik": "0001286681",
+    "company": "Dominos",
+    "last_10k": "2026-02-23"
+  },
+  "DRI": {
+    "cik": "0000940944",
+    "company": "Darden Restaurants",
+    "last_10k": "2025-07-18"
+  },
+  "DTE": {
+    "cik": "0000936340",
+    "company": "DTE Energy",
+    "last_10k": "2026-02-17"
+  },
+  "DUK": {
+    "cik": "0001326160",
+    "company": "Duke Energy",
+    "last_10k": "2026-02-26"
+  },
+  "DVA": {
+    "cik": "0000927066",
+    "company": "DaVita",
+    "last_10k": "2026-02-11"
+  },
+  "DVN": {
+    "cik": "0001090012",
+    "company": "Devon Energy",
+    "last_10k": "2026-02-18"
+  },
+  "DXCM": {
+    "cik": "0001093557",
+    "company": "Dexcom",
+    "last_10k": "2026-02-12"
+  },
+  "EA": {
+    "cik": "0000712515",
+    "company": "Electronic Arts",
+    "last_10k": "2026-05-11"
+  },
+  "EBAY": {
+    "cik": "0001065088",
+    "company": "eBay Inc.",
+    "last_10k": "2026-02-19"
+  },
+  "ECL": {
+    "cik": "0000031462",
+    "company": "Ecolab",
+    "last_10k": "2026-02-23"
+  },
+  "ED": {
+    "cik": "0001047862",
+    "company": "Consolidated Edison",
+    "last_10k": "2026-02-19"
+  },
+  "EFX": {
+    "cik": "0000033185",
+    "company": "Equifax",
+    "last_10k": "2026-02-19"
+  },
+  "EG": {
+    "cik": "0001095073",
+    "company": "Everest Group",
+    "last_10k": "2026-02-26"
+  },
+  "EIX": {
+    "cik": "0000827052",
+    "company": "Edison International",
+    "last_10k": "2026-02-18"
+  },
+  "EL": {
+    "cik": "0001001250",
+    "company": "Estee Lauder",
+    "last_10k": "2025-08-20"
+  },
+  "ELV": {
+    "cik": "0001156039",
+    "company": "Elevance Health",
+    "last_10k": "2026-02-06"
+  },
+  "EME": {
+    "cik": "0000105634",
+    "company": "Emcor",
+    "last_10k": "2026-02-26"
+  },
+  "EMR": {
+    "cik": "0000032604",
+    "company": "Emerson Electric",
+    "last_10k": "2025-11-10"
+  },
+  "EOG": {
+    "cik": "0000821189",
+    "company": "EOG Resources",
+    "last_10k": "2026-02-24"
+  },
+  "EPAM": {
+    "cik": "0001352010",
+    "company": "EPAM Systems",
+    "last_10k": "2026-02-26"
+  },
+  "EQIX": {
+    "cik": "0001101239",
+    "company": "Equinix",
+    "last_10k": "2026-02-11"
+  },
+  "EQR": {
+    "cik": "0000906107",
+    "company": "Equity Residential",
+    "last_10k": "2026-02-13"
+  },
+  "EQT": {
+    "cik": "0000033213",
+    "company": "EQT Corporation",
+    "last_10k": "2026-02-18"
+  },
+  "ERIE": {
+    "cik": "0000922621",
+    "company": "Erie Indemnity",
+    "last_10k": "2026-02-23"
+  },
+  "ES": {
+    "cik": "0000072741",
+    "company": "Eversource Energy",
+    "last_10k": "2026-02-17"
+  },
+  "ESS": {
+    "cik": "0000920522",
+    "company": "Essex Property Trust",
+    "last_10k": "2026-02-20"
+  },
+  "ETN": {
+    "cik": "0001551182",
+    "company": "Eaton Corporation",
+    "last_10k": "2026-02-26"
+  },
+  "ETR": {
+    "cik": "0000065984",
+    "company": "Entergy",
+    "last_10k": "2026-02-19"
+  },
+  "EVRG": {
+    "cik": "0001711269",
+    "company": "Evergy",
+    "last_10k": "2026-02-19"
+  },
+  "EW": {
+    "cik": "0001099800",
+    "company": "Edwards Lifesciences",
+    "last_10k": "2026-02-25"
+  },
+  "EXC": {
+    "cik": "0001109357",
+    "company": "Exelon",
+    "last_10k": "2026-02-12"
+  },
+  "EXE": {
+    "cik": "0000895126",
+    "company": "Expand Energy",
+    "last_10k": "2026-02-18"
+  },
+  "EXPD": {
+    "cik": "0000746515",
+    "company": "Expeditors International",
+    "last_10k": "2026-02-25"
+  },
+  "EXR": {
+    "cik": "0001289490",
+    "company": "Extra Space Storage",
+    "last_10k": "2026-02-20"
+  },
+  "F": {
+    "cik": "0000037996",
+    "company": "Ford Motor Company",
+    "last_10k": "2026-02-11"
+  },
+  "FANG": {
+    "cik": "0001539838",
+    "company": "Diamondback Energy",
+    "last_10k": "2026-02-25"
+  },
+  "FAST": {
+    "cik": "0000815556",
+    "company": "Fastenal",
+    "last_10k": "2026-02-05"
+  },
+  "FCX": {
+    "cik": "0000831259",
+    "company": "Freeport-McMoRan",
+    "last_10k": "2026-02-13"
+  },
+  "FDS": {
+    "cik": "0001013237",
+    "company": "FactSet",
+    "last_10k": "2025-10-22"
+  },
+  "FDX": {
+    "cik": "0001048911",
+    "company": "FedEx",
+    "last_10k": "2025-07-21"
+  },
+  "FE": {
+    "cik": "0001031296",
+    "company": "FirstEnergy",
+    "last_10k": "2026-02-18"
+  },
+  "FFIV": {
+    "cik": "0001048695",
+    "company": "F5 Inc.",
+    "last_10k": "2025-11-25"
+  },
+  "FICO": {
+    "cik": "0000814547",
+    "company": "Fair Isaac",
+    "last_10k": "2025-11-07"
+  },
+  "FIS": {
+    "cik": "0001136893",
+    "company": "Fidelity National Information",
+    "last_10k": "2026-02-24"
+  },
+  "FISV": {
+    "cik": "0000798354",
+    "company": "Fiserv",
+    "last_10k": "2026-02-19"
+  },
+  "FITB": {
+    "cik": "0000035527",
+    "company": "Fifth Third Bancorp",
+    "last_10k": "2026-02-24"
+  },
+  "FOXA": {
+    "cik": "0001754301",
+    "company": "Fox Corporation",
+    "last_10k": "2025-08-06"
+  },
+  "FRT": {
+    "cik": "0000034903",
+    "company": "Federal Realty",
+    "last_10k": "2026-02-12"
+  },
+  "FSLR": {
+    "cik": "0001274494",
+    "company": "First Solar",
+    "last_10k": "2026-02-24"
+  },
+  "FTNT": {
+    "cik": "0001262039",
+    "company": "Fortinet",
+    "last_10k": "2026-02-25"
+  },
+  "FTV": {
+    "cik": "0001659166",
+    "company": "Fortive",
+    "last_10k": "2026-02-25"
+  },
+  "GD": {
+    "cik": "0000040533",
+    "company": "General Dynamics",
+    "last_10k": "2026-01-30"
+  },
+  "GDDY": {
+    "cik": "0001609711",
+    "company": "GoDaddy",
+    "last_10k": "2026-02-25"
+  },
+  "GE": {
+    "cik": "0000040545",
+    "company": "GE Aerospace",
+    "last_10k": "2026-01-29"
+  },
+  "GEHC": {
+    "cik": "0001932393",
+    "company": "GE HealthCare",
+    "last_10k": "2026-02-04"
+  },
+  "GEN": {
+    "cik": "0000849399",
+    "company": "Gen Digital",
+    "last_10k": "2026-05-21"
+  },
+  "GEV": {
+    "cik": "0001996810",
+    "company": "GE Vernova",
+    "last_10k": "2026-01-29"
+  },
+  "GILD": {
+    "cik": "0000882095",
+    "company": "Gilead Sciences",
+    "last_10k": "2026-02-24"
+  },
+  "GIS": {
+    "cik": "0000040704",
+    "company": "General Mills",
+    "last_10k": "2025-06-26"
+  },
+  "GL": {
+    "cik": "0000320335",
+    "company": "Globe Life",
+    "last_10k": "2026-02-25"
+  },
+  "GLW": {
+    "cik": "0000024741",
+    "company": "Corning Inc.",
+    "last_10k": "2026-02-12"
+  },
+  "GM": {
+    "cik": "0001467858",
+    "company": "General Motors",
+    "last_10k": "2026-01-27"
+  },
+  "GNRC": {
+    "cik": "0001474735",
+    "company": "Generac",
+    "last_10k": "2026-02-18"
+  },
+  "GOOGL": {
+    "cik": "0001652044",
+    "company": "Alphabet Inc.",
+    "last_10k": "2026-02-05"
+  },
+  "GPC": {
+    "cik": "0000040987",
+    "company": "Genuine Parts Company",
+    "last_10k": "2026-02-20"
+  },
+  "GPN": {
+    "cik": "0001123360",
+    "company": "Global Payments",
+    "last_10k": "2026-02-20"
+  },
+  "GRMN": {
+    "cik": "0001121788",
+    "company": "Garmin",
+    "last_10k": "2026-02-18"
+  },
+  "GS": {
+    "cik": "0000886982",
+    "company": "Goldman Sachs",
+    "last_10k": "2026-02-25"
+  },
+  "GWW": {
+    "cik": "0000277135",
+    "company": "W. W. Grainger",
+    "last_10k": "2026-02-19"
+  },
+  "HAL": {
+    "cik": "0000045012",
+    "company": "Halliburton",
+    "last_10k": "2026-02-06"
+  },
+  "HAS": {
+    "cik": "0000046080",
+    "company": "Hasbro",
+    "last_10k": "2026-02-25"
+  },
+  "HBAN": {
+    "cik": "0000049196",
+    "company": "Huntington Bancshares",
+    "last_10k": "2026-02-13"
+  },
+  "HCA": {
+    "cik": "0000860730",
+    "company": "HCA Healthcare",
+    "last_10k": "2026-02-10"
+  },
+  "HD": {
+    "cik": "0000354950",
+    "company": "Home Depot",
+    "last_10k": "2026-03-18"
+  },
+  "HIG": {
+    "cik": "0000874766",
+    "company": "Hartford",
+    "last_10k": "2026-02-20"
+  },
+  "HII": {
+    "cik": "0001501585",
+    "company": "Huntington Ingalls",
+    "last_10k": "2026-02-05"
+  },
+  "HLT": {
+    "cik": "0001585689",
+    "company": "Hilton Worldwide",
+    "last_10k": "2026-02-11"
+  },
+  "HOLX": {
+    "cik": "0000859737",
+    "company": "Hologic",
+    "last_10k": "2025-11-18"
+  },
+  "HON": {
+    "cik": "0000773840",
+    "company": "Honeywell",
+    "last_10k": "2026-02-17"
+  },
+  "HPE": {
+    "cik": "0001645590",
+    "company": "Hewlett Packard Enterprise",
+    "last_10k": "2025-12-18"
+  },
+  "HPQ": {
+    "cik": "0000047217",
+    "company": "HP Inc.",
+    "last_10k": "2025-12-10"
+  },
+  "HRL": {
+    "cik": "0000048465",
+    "company": "Hormel Foods",
+    "last_10k": "2025-12-05"
+  },
+  "HSIC": {
+    "cik": "0001000228",
+    "company": "Henry Schein",
+    "last_10k": "2026-02-24"
+  },
+  "HST": {
+    "cik": "0001070750",
+    "company": "Host Hotels",
+    "last_10k": "2026-02-25"
+  },
+  "HSY": {
+    "cik": "0000047111",
+    "company": "Hershey Company",
+    "last_10k": "2026-02-17"
+  },
+  "HUBB": {
+    "cik": "0000048898",
+    "company": "Hubbell",
+    "last_10k": "2026-02-12"
+  },
+  "HUM": {
+    "cik": "0000049071",
+    "company": "Humana",
+    "last_10k": "2026-02-19"
+  },
+  "HWM": {
+    "cik": "0000004281",
+    "company": "Howmet Aerospace",
+    "last_10k": "2026-02-12"
+  },
+  "IBKR": {
+    "cik": "0001381197",
+    "company": "Interactive Brokers",
+    "last_10k": "2026-02-27"
+  },
+  "IBM": {
+    "cik": "0000051143",
+    "company": "IBM",
+    "last_10k": "2026-02-24"
+  },
+  "ICE": {
+    "cik": "0001571949",
+    "company": "Intercontinental Exchange",
+    "last_10k": "2026-02-05"
+  },
+  "IDXX": {
+    "cik": "0000874716",
+    "company": "Idexx Laboratories",
+    "last_10k": "2026-02-20"
+  },
+  "IEX": {
+    "cik": "0000832101",
+    "company": "IDEX Corporation",
+    "last_10k": "2026-02-19"
+  },
+  "IFF": {
+    "cik": "0000051253",
+    "company": "International Flavors",
+    "last_10k": "2026-02-27"
+  },
+  "INCY": {
+    "cik": "0000879169",
+    "company": "Incyte",
+    "last_10k": "2026-02-10"
+  },
+  "INTC": {
+    "cik": "0000050863",
+    "company": "Intel",
+    "last_10k": "2026-01-23"
+  },
+  "INTU": {
+    "cik": "0000896878",
+    "company": "Intuit",
+    "last_10k": "2025-09-03"
+  },
+  "INVH": {
+    "cik": "0001687229",
+    "company": "Invitation Homes",
+    "last_10k": "2026-02-19"
+  },
+  "IP": {
+    "cik": "0000051434",
+    "company": "International Paper",
+    "last_10k": "2026-02-27"
+  },
+  "IQV": {
+    "cik": "0001478242",
+    "company": "IQVIA",
+    "last_10k": "2026-02-17"
+  },
+  "IR": {
+    "cik": "0001699150",
+    "company": "Ingersoll Rand",
+    "last_10k": "2026-02-17"
+  },
+  "IRM": {
+    "cik": "0001020569",
+    "company": "Iron Mountain",
+    "last_10k": "2026-02-12"
+  },
+  "ISRG": {
+    "cik": "0001035267",
+    "company": "Intuitive Surgical",
+    "last_10k": "2026-02-03"
+  },
+  "IT": {
+    "cik": "0000749251",
+    "company": "Gartner",
+    "last_10k": "2026-02-12"
+  },
+  "ITW": {
+    "cik": "0000049826",
+    "company": "Illinois Tool Works",
+    "last_10k": "2026-02-13"
+  },
+  "IVZ": {
+    "cik": "0000914208",
+    "company": "Invesco",
+    "last_10k": "2026-02-24"
+  },
+  "J": {
+    "cik": "0000052988",
+    "company": "Jacobs Solutions",
+    "last_10k": "2025-11-20"
+  },
+  "JBHT": {
+    "cik": "0000728535",
+    "company": "J.B. Hunt",
+    "last_10k": "2026-02-24"
+  },
+  "JBL": {
+    "cik": "0000898293",
+    "company": "Jabil",
+    "last_10k": "2025-10-17"
+  },
+  "JCI": {
+    "cik": "0000833444",
+    "company": "Johnson Controls",
+    "last_10k": "2025-11-14"
+  },
+  "JKHY": {
+    "cik": "0000779152",
+    "company": "Jack Henry",
+    "last_10k": "2025-08-25"
+  },
+  "JNJ": {
+    "cik": "0000200406",
+    "company": "Johnson & Johnson",
+    "last_10k": "2026-02-11"
+  },
+  "JPM": {
+    "cik": "0000019617",
+    "company": "JPMorgan Chase",
+    "last_10k": "2026-02-13"
+  },
+  "KDP": {
+    "cik": "0001418135",
+    "company": "Keurig Dr Pepper",
+    "last_10k": "2026-02-24"
+  },
+  "KEY": {
+    "cik": "0000091576",
+    "company": "KeyCorp",
+    "last_10k": "2026-02-23"
+  },
+  "KEYS": {
+    "cik": "0001601046",
+    "company": "Keysight Technologies",
+    "last_10k": "2025-12-17"
+  },
+  "KHC": {
+    "cik": "0001637459",
+    "company": "Kraft Heinz",
+    "last_10k": "2026-02-12"
+  },
+  "KIM": {
+    "cik": "0000879101",
+    "company": "Kimco Realty",
+    "last_10k": "2026-02-20"
+  },
+  "KKR": {
+    "cik": "0001404912",
+    "company": "KKR & Co.",
+    "last_10k": "2026-02-27"
+  },
+  "KLAC": {
+    "cik": "0000319201",
+    "company": "KLA Corporation",
+    "last_10k": "2025-08-08"
+  },
+  "KMB": {
+    "cik": "0000055785",
+    "company": "Kimberly-Clark",
+    "last_10k": "2026-02-12"
+  },
+  "KMI": {
+    "cik": "0001506307",
+    "company": "Kinder Morgan",
+    "last_10k": "2026-02-13"
+  },
+  "KO": {
+    "cik": "0000021344",
+    "company": "Coca-Cola",
+    "last_10k": "2026-02-20"
+  },
+  "KR": {
+    "cik": "0000056873",
+    "company": "Kroger",
+    "last_10k": "2026-03-31"
+  },
+  "KVUE": {
+    "cik": "0001944048",
+    "company": "Kenvue",
+    "last_10k": "2026-02-20"
+  },
+  "L": {
+    "cik": "0000060086",
+    "company": "Loews Corporation",
+    "last_10k": "2026-02-10"
+  },
+  "LDOS": {
+    "cik": "0001336920",
+    "company": "Leidos",
+    "last_10k": "2026-02-17"
+  },
+  "LEN": {
+    "cik": "0000920760",
+    "company": "Lennar",
+    "last_10k": "2026-01-28"
+  },
+  "LH": {
+    "cik": "0000920148",
+    "company": "Labcorp",
+    "last_10k": "2026-02-24"
+  },
+  "LHX": {
+    "cik": "0000202058",
+    "company": "L3Harris",
+    "last_10k": "2026-02-12"
+  },
+  "LII": {
+    "cik": "0001069202",
+    "company": "Lennox International",
+    "last_10k": "2026-02-17"
+  },
+  "LIN": {
+    "cik": "0001707925",
+    "company": "Linde plc",
+    "last_10k": "2026-02-25"
+  },
+  "LLY": {
+    "cik": "0000059478",
+    "company": "Eli Lilly",
+    "last_10k": "2026-02-12"
+  },
+  "LMT": {
+    "cik": "0000936468",
+    "company": "Lockheed Martin",
+    "last_10k": "2026-01-29"
+  },
+  "LNT": {
+    "cik": "0000352541",
+    "company": "Alliant Energy",
+    "last_10k": "2026-02-20"
+  },
+  "LOW": {
+    "cik": "0000060667",
+    "company": "Lowes",
+    "last_10k": "2026-03-23"
+  },
+  "LRCX": {
+    "cik": "0000707549",
+    "company": "Lam Research",
+    "last_10k": "2025-08-11"
+  },
+  "LULU": {
+    "cik": "0001397187",
+    "company": "Lululemon Athletica",
+    "last_10k": "2026-03-17"
+  },
+  "LUV": {
+    "cik": "0000092380",
+    "company": "Southwest Airlines",
+    "last_10k": "2026-02-05"
+  },
+  "LVS": {
+    "cik": "0001300514",
+    "company": "Las Vegas Sands",
+    "last_10k": "2026-02-06"
+  },
+  "LW": {
+    "cik": "0001679273",
+    "company": "Lamb Weston",
+    "last_10k": "2025-07-23"
+  },
+  "LYB": {
+    "cik": "0001489393",
+    "company": "LyondellBasell",
+    "last_10k": "2026-02-20"
+  },
+  "LYV": {
+    "cik": "0001335258",
+    "company": "Live Nation",
+    "last_10k": "2026-02-19"
+  },
+  "MA": {
+    "cik": "0001141391",
+    "company": "Mastercard",
+    "last_10k": "2026-02-11"
+  },
+  "MAA": {
+    "cik": "0000912595",
+    "company": "Mid-America Apartment",
+    "last_10k": "2026-02-06"
+  },
+  "MAR": {
+    "cik": "0001048286",
+    "company": "Marriott International",
+    "last_10k": "2026-02-10"
+  },
+  "MAS": {
+    "cik": "0000062996",
+    "company": "Masco",
+    "last_10k": "2026-02-10"
+  },
+  "MCD": {
+    "cik": "0000063908",
+    "company": "McDonalds",
+    "last_10k": "2026-02-24"
+  },
+  "MCHP": {
+    "cik": "0000827054",
+    "company": "Microchip Technology",
+    "last_10k": "2026-05-21"
+  },
+  "MCK": {
+    "cik": "0000927653",
+    "company": "McKesson Corporation",
+    "last_10k": "2026-05-08"
+  },
+  "MCO": {
+    "cik": "0001059556",
+    "company": "Moodys Corporation",
+    "last_10k": "2026-02-18"
+  },
+  "MDLZ": {
+    "cik": "0001103982",
+    "company": "Mondelez International",
+    "last_10k": "2026-02-04"
+  },
+  "MDT": {
+    "cik": "0001613103",
+    "company": "Medtronic",
+    "last_10k": "2025-06-20"
+  },
+  "MET": {
+    "cik": "0001099219",
+    "company": "MetLife",
+    "last_10k": "2026-02-19"
+  },
+  "META": {
+    "cik": "0001326801",
+    "company": "Meta Platforms",
+    "last_10k": "2026-01-29"
+  },
+  "MGM": {
+    "cik": "0000789570",
+    "company": "MGM Resorts",
+    "last_10k": "2026-02-11"
+  },
+  "MKC": {
+    "cik": "0000063754",
+    "company": "McCormick",
+    "last_10k": "2026-01-22"
+  },
+  "MLM": {
+    "cik": "0000916076",
+    "company": "Martin Marietta Materials",
+    "last_10k": "2026-02-19"
+  },
+  "MMM": {
+    "cik": "0000066740",
+    "company": "3M",
+    "last_10k": "2026-02-03"
+  },
+  "MNST": {
+    "cik": "0000865752",
+    "company": "Monster Beverage",
+    "last_10k": "2026-02-27"
+  },
+  "MO": {
+    "cik": "0000764180",
+    "company": "Altria",
+    "last_10k": "2026-02-25"
+  },
+  "MOH": {
+    "cik": "0001179929",
+    "company": "Molina Healthcare",
+    "last_10k": "2026-02-10"
+  },
+  "MOS": {
+    "cik": "0001285785",
+    "company": "Mosaic Company",
+    "last_10k": "2026-02-27"
+  },
+  "MPC": {
+    "cik": "0001510295",
+    "company": "Marathon Petroleum",
+    "last_10k": "2026-02-26"
+  },
+  "MPWR": {
+    "cik": "0001280452",
+    "company": "Monolithic Power Systems",
+    "last_10k": "2026-02-27"
+  },
+  "MRK": {
+    "cik": "0000310158",
+    "company": "Merck & Co.",
+    "last_10k": "2026-02-24"
+  },
+  "MRNA": {
+    "cik": "0001682852",
+    "company": "Moderna",
+    "last_10k": "2026-02-20"
+  },
+  "MRSH": {
+    "cik": "0000062709",
+    "company": "Marsh McLennan",
+    "last_10k": "2026-02-09"
+  },
+  "MS": {
+    "cik": "0000895421",
+    "company": "Morgan Stanley",
+    "last_10k": "2026-02-19"
+  },
+  "MSCI": {
+    "cik": "0001408198",
+    "company": "MSCI Inc.",
+    "last_10k": "2026-02-06"
+  },
+  "MSFT": {
+    "cik": "0000789019",
+    "company": "Microsoft",
+    "last_10k": "2025-07-30"
+  },
+  "MSI": {
+    "cik": "0000068505",
+    "company": "Motorola Solutions",
+    "last_10k": "2026-02-12"
+  },
+  "MTB": {
+    "cik": "0000036270",
+    "company": "M&T Bank",
+    "last_10k": "2026-02-18"
+  },
+  "MTCH": {
+    "cik": "0000891103",
+    "company": "Match Group",
+    "last_10k": "2026-02-26"
+  },
+  "MTD": {
+    "cik": "0001037646",
+    "company": "Mettler Toledo",
+    "last_10k": "2026-02-06"
+  },
+  "MU": {
+    "cik": "0000723125",
+    "company": "Micron Technology",
+    "last_10k": "2025-10-03"
+  },
+  "NCLH": {
+    "cik": "0001513761",
+    "company": "Norwegian Cruise Line",
+    "last_10k": "2026-03-02"
+  },
+  "NDAQ": {
+    "cik": "0001120193",
+    "company": "Nasdaq Inc.",
+    "last_10k": "2026-02-12"
+  },
+  "NDSN": {
+    "cik": "0000072331",
+    "company": "Nordson Corporation",
+    "last_10k": "2025-12-17"
+  },
+  "NEE": {
+    "cik": "0000753308",
+    "company": "NextEra Energy",
+    "last_10k": "2026-02-13"
+  },
+  "NEM": {
+    "cik": "0001164727",
+    "company": "Newmont",
+    "last_10k": "2026-02-19"
+  },
+  "NFLX": {
+    "cik": "0001065280",
+    "company": "Netflix",
+    "last_10k": "2026-01-23"
+  },
+  "NI": {
+    "cik": "0001111711",
+    "company": "NiSource",
+    "last_10k": "2026-02-11"
+  },
+  "NKE": {
+    "cik": "0000320187",
+    "company": "Nike Inc.",
+    "last_10k": "2025-07-17"
+  },
+  "NOC": {
+    "cik": "0001133421",
+    "company": "Northrop Grumman",
+    "last_10k": "2026-01-27"
+  },
+  "NOW": {
+    "cik": "0001373715",
+    "company": "ServiceNow",
+    "last_10k": "2026-01-29"
+  },
+  "NRG": {
+    "cik": "0001013871",
+    "company": "NRG Energy",
+    "last_10k": "2026-02-24"
+  },
+  "NSC": {
+    "cik": "0000702165",
+    "company": "Norfolk Southern",
+    "last_10k": "2026-02-09"
+  },
+  "NTAP": {
+    "cik": "0001002047",
+    "company": "NetApp",
+    "last_10k": "2025-06-09"
+  },
+  "NTRS": {
+    "cik": "0000073124",
+    "company": "Northern Trust",
+    "last_10k": "2026-02-24"
+  },
+  "NUE": {
+    "cik": "0000073309",
+    "company": "Nucor",
+    "last_10k": "2026-02-25"
+  },
+  "NVDA": {
+    "cik": "0001045810",
+    "company": "Nvidia",
+    "last_10k": "2026-02-25"
+  },
+  "NVR": {
+    "cik": "0000906163",
+    "company": "NVR Inc.",
+    "last_10k": "2026-02-11"
+  },
+  "NXPI": {
+    "cik": "0001413447",
+    "company": "NXP Semiconductors",
+    "last_10k": "2026-02-19"
+  },
+  "O": {
+    "cik": "0000726728",
+    "company": "Realty Income",
+    "last_10k": "2026-02-25"
+  },
+  "ODFL": {
+    "cik": "0000878927",
+    "company": "Old Dominion",
+    "last_10k": "2026-02-24"
+  },
+  "OKE": {
+    "cik": "0001039684",
+    "company": "Oneok",
+    "last_10k": "2026-02-24"
+  },
+  "OMC": {
+    "cik": "0000029989",
+    "company": "Omnicom Group",
+    "last_10k": "2026-02-20"
+  },
+  "ON": {
+    "cik": "0001097864",
+    "company": "ON Semiconductor",
+    "last_10k": "2026-02-09"
+  },
+  "ORCL": {
+    "cik": "0001341439",
+    "company": "Oracle Corporation",
+    "last_10k": "2025-06-18"
+  },
+  "ORLY": {
+    "cik": "0000898173",
+    "company": "OReilly Automotive",
+    "last_10k": "2026-02-27"
+  },
+  "OTIS": {
+    "cik": "0001781335",
+    "company": "Otis Worldwide",
+    "last_10k": "2026-02-05"
+  },
+  "OXY": {
+    "cik": "0000797468",
+    "company": "Occidental Petroleum",
+    "last_10k": "2026-02-18"
+  },
+  "PANW": {
+    "cik": "0001327567",
+    "company": "Palo Alto Networks",
+    "last_10k": "2025-08-29"
+  },
+  "PAYC": {
+    "cik": "0001590955",
+    "company": "Paycom",
+    "last_10k": "2026-02-19"
+  },
+  "PAYX": {
+    "cik": "0000723531",
+    "company": "Paychex",
+    "last_10k": "2025-07-11"
+  },
+  "PCAR": {
+    "cik": "0000075362",
+    "company": "Paccar",
+    "last_10k": "2026-02-18"
+  },
+  "PCG": {
+    "cik": "0001004980",
+    "company": "PGE Corporation",
+    "last_10k": "2026-02-12"
+  },
+  "PEG": {
+    "cik": "0000788784",
+    "company": "Public Service Enterprise",
+    "last_10k": "2026-02-26"
+  },
+  "PEP": {
+    "cik": "0000077476",
+    "company": "PepsiCo",
+    "last_10k": "2026-02-03"
+  },
+  "PFE": {
+    "cik": "0000078003",
+    "company": "Pfizer",
+    "last_10k": "2026-02-26"
+  },
+  "PFG": {
+    "cik": "0001126328",
+    "company": "Principal Financial Group",
+    "last_10k": "2026-02-18"
+  },
+  "PG": {
+    "cik": "0000080424",
+    "company": "Procter & Gamble",
+    "last_10k": "2025-08-04"
+  },
+  "PGR": {
+    "cik": "0000080661",
+    "company": "Progressive Corporation",
+    "last_10k": "2026-03-02"
+  },
+  "PH": {
+    "cik": "0000076334",
+    "company": "Parker Hannifin",
+    "last_10k": "2025-08-22"
+  },
+  "PHM": {
+    "cik": "0000822416",
+    "company": "PulteGroup",
+    "last_10k": "2026-02-04"
+  },
+  "PKG": {
+    "cik": "0000075677",
+    "company": "Packaging Corporation",
+    "last_10k": "2026-02-26"
+  },
+  "PLD": {
+    "cik": "0001045609",
+    "company": "Prologis",
+    "last_10k": "2026-02-13"
+  },
+  "PLTR": {
+    "cik": "0001321655",
+    "company": "Palantir Technologies",
+    "last_10k": "2026-02-17"
+  },
+  "PM": {
+    "cik": "0001413329",
+    "company": "Philip Morris",
+    "last_10k": "2026-02-06"
+  },
+  "PNC": {
+    "cik": "0000713676",
+    "company": "PNC Financial Services",
+    "last_10k": "2026-02-20"
+  },
+  "PNR": {
+    "cik": "0000077360",
+    "company": "Pentair",
+    "last_10k": "2026-02-24"
+  },
+  "PNW": {
+    "cik": "0000764622",
+    "company": "Pinnacle West Capital",
+    "last_10k": "2026-02-25"
+  },
+  "PODD": {
+    "cik": "0001145197",
+    "company": "Insulet Corporation",
+    "last_10k": "2026-02-18"
+  },
+  "POOL": {
+    "cik": "0000945841",
+    "company": "Pool Corporation",
+    "last_10k": "2026-02-26"
+  },
+  "PPG": {
+    "cik": "0000079879",
+    "company": "PPG Industries",
+    "last_10k": "2026-02-19"
+  },
+  "PPL": {
+    "cik": "0000922224",
+    "company": "PPL Corporation",
+    "last_10k": "2026-02-20"
+  },
+  "PRU": {
+    "cik": "0001137774",
+    "company": "Prudential Financial",
+    "last_10k": "2026-02-12"
+  },
+  "PSA": {
+    "cik": "0001393311",
+    "company": "Public Storage",
+    "last_10k": "2026-02-12"
+  },
+  "PSX": {
+    "cik": "0001534701",
+    "company": "Phillips 66",
+    "last_10k": "2026-02-20"
+  },
+  "PTC": {
+    "cik": "0000857005",
+    "company": "PTC Inc.",
+    "last_10k": "2025-11-21"
+  },
+  "PWR": {
+    "cik": "0001050915",
+    "company": "Quanta Services",
+    "last_10k": "2026-02-19"
+  },
+  "PYPL": {
+    "cik": "0001633917",
+    "company": "PayPal",
+    "last_10k": "2026-02-03"
+  },
+  "QCOM": {
+    "cik": "0000804328",
+    "company": "Qualcomm",
+    "last_10k": "2025-11-05"
+  },
+  "RCL": {
+    "cik": "0000884887",
+    "company": "Royal Caribbean Group",
+    "last_10k": "2026-02-11"
+  },
+  "REG": {
+    "cik": "0000910606",
+    "company": "Regency Centers",
+    "last_10k": "2026-02-13"
+  },
+  "REGN": {
+    "cik": "0000872589",
+    "company": "Regeneron Pharmaceuticals",
+    "last_10k": "2026-02-04"
+  },
+  "RF": {
+    "cik": "0001281761",
+    "company": "Regions Financial",
+    "last_10k": "2026-02-24"
+  },
+  "RJF": {
+    "cik": "0000720005",
+    "company": "Raymond James Financial",
+    "last_10k": "2025-11-25"
+  },
+  "RL": {
+    "cik": "0001037038",
+    "company": "Ralph Lauren Corporation",
+    "last_10k": "2026-05-21"
+  },
+  "RMD": {
+    "cik": "0000943819",
+    "company": "ResMed",
+    "last_10k": "2025-08-08"
+  },
+  "ROK": {
+    "cik": "0001024478",
+    "company": "Rockwell Automation",
+    "last_10k": "2025-11-12"
+  },
+  "ROL": {
+    "cik": "0000084839",
+    "company": "Rollins Inc.",
+    "last_10k": "2026-02-12"
+  },
+  "ROP": {
+    "cik": "0000882835",
+    "company": "Roper Technologies",
+    "last_10k": "2026-02-24"
+  },
+  "ROST": {
+    "cik": "0000745732",
+    "company": "Ross Stores",
+    "last_10k": "2026-03-31"
+  },
+  "RSG": {
+    "cik": "0001060391",
+    "company": "Republic Services",
+    "last_10k": "2026-02-18"
+  },
+  "RTX": {
+    "cik": "0000101829",
+    "company": "RTX Corporation",
+    "last_10k": "2026-02-06"
+  },
+  "RVTY": {
+    "cik": "0000031791",
+    "company": "Revvity",
+    "last_10k": "2026-02-24"
+  },
+  "SBAC": {
+    "cik": "0001034054",
+    "company": "SBA Communications",
+    "last_10k": "2026-02-27"
+  },
+  "SBUX": {
+    "cik": "0000829224",
+    "company": "Starbucks",
+    "last_10k": "2025-11-14"
+  },
+  "SCHW": {
+    "cik": "0000316709",
+    "company": "Charles Schwab",
+    "last_10k": "2026-02-25"
+  },
+  "SHW": {
+    "cik": "0000089800",
+    "company": "Sherwin-Williams",
+    "last_10k": "2026-02-19"
+  },
+  "SJM": {
+    "cik": "0000091419",
+    "company": "J.M. Smucker",
+    "last_10k": "2025-06-18"
+  },
+  "SLB": {
+    "cik": "0000087347",
+    "company": "Schlumberger",
+    "last_10k": "2026-01-23"
+  },
+  "SMCI": {
+    "cik": "0001375365",
+    "company": "Supermicro",
+    "last_10k": "2025-08-28"
+  },
+  "SNA": {
+    "cik": "0000091440",
+    "company": "Snap-on",
+    "last_10k": "2026-02-12"
+  },
+  "SNPS": {
+    "cik": "0000883241",
+    "company": "Synopsys",
+    "last_10k": "2025-12-22"
+  },
+  "SO": {
+    "cik": "0000092122",
+    "company": "Southern Company",
+    "last_10k": "2026-02-19"
+  },
+  "SOLV": {
+    "cik": "0001964738",
+    "company": "Solventum",
+    "last_10k": "2026-02-27"
+  },
+  "SPG": {
+    "cik": "0001063761",
+    "company": "Simon Property Group",
+    "last_10k": "2026-02-25"
+  },
+  "SPGI": {
+    "cik": "0000064040",
+    "company": "S&P Global",
+    "last_10k": "2026-02-11"
+  },
+  "SRE": {
+    "cik": "0001032208",
+    "company": "Sempra",
+    "last_10k": "2026-02-26"
+  },
+  "STE": {
+    "cik": "0001757898",
+    "company": "Steris",
+    "last_10k": "2025-05-29"
+  },
+  "STLD": {
+    "cik": "0001022671",
+    "company": "Steel Dynamics",
+    "last_10k": "2026-02-27"
+  },
+  "STT": {
+    "cik": "0000093751",
+    "company": "State Street",
+    "last_10k": "2026-02-19"
+  },
+  "STX": {
+    "cik": "0001137789",
+    "company": "Seagate Technology",
+    "last_10k": "2025-08-01"
+  },
+  "STZ": {
+    "cik": "0000016918",
+    "company": "Constellation Brands",
+    "last_10k": "2026-04-22"
+  },
+  "SWK": {
+    "cik": "0000093556",
+    "company": "Stanley Black & Decker",
+    "last_10k": "2026-02-24"
+  },
+  "SWKS": {
+    "cik": "0000004127",
+    "company": "Skyworks Solutions",
+    "last_10k": "2025-11-07"
+  },
+  "SYF": {
+    "cik": "0001601712",
+    "company": "Synchrony Financial",
+    "last_10k": "2026-02-06"
+  },
+  "SYK": {
+    "cik": "0000310764",
+    "company": "Stryker Corporation",
+    "last_10k": "2026-02-11"
+  },
+  "SYY": {
+    "cik": "0000096021",
+    "company": "Sysco",
+    "last_10k": "2025-08-22"
+  },
+  "T": {
+    "cik": "0000732717",
+    "company": "AT&T",
+    "last_10k": "2026-02-09"
+  },
+  "TAP": {
+    "cik": "0000024545",
+    "company": "Molson Coors",
+    "last_10k": "2026-02-18"
+  },
+  "TDG": {
+    "cik": "0001260221",
+    "company": "TransDigm Group",
+    "last_10k": "2025-11-12"
+  },
+  "TDY": {
+    "cik": "0001094285",
+    "company": "Teledyne Technologies",
+    "last_10k": "2026-02-20"
+  },
+  "TECH": {
+    "cik": "0000842023",
+    "company": "Bio-Techne",
+    "last_10k": "2025-08-22"
+  },
+  "TEL": {
+    "cik": "0001385157",
+    "company": "TE Connectivity",
+    "last_10k": "2025-11-10"
+  },
+  "TER": {
+    "cik": "0000097210",
+    "company": "Teradyne",
+    "last_10k": "2026-02-19"
+  },
+  "TFC": {
+    "cik": "0000092230",
+    "company": "Truist Financial",
+    "last_10k": "2026-02-24"
+  },
+  "TGT": {
+    "cik": "0000027419",
+    "company": "Target Corporation",
+    "last_10k": "2026-03-11"
+  },
+  "TJX": {
+    "cik": "0000109198",
+    "company": "TJX Companies",
+    "last_10k": "2026-03-31"
+  },
+  "TKO": {
+    "cik": "0001973266",
+    "company": "TKO Group Holdings",
+    "last_10k": "2026-02-25"
+  },
+  "TMO": {
+    "cik": "0000097745",
+    "company": "Thermo Fisher Scientific",
+    "last_10k": "2026-02-26"
+  },
+  "TMUS": {
+    "cik": "0001283699",
+    "company": "T-Mobile US",
+    "last_10k": "2026-02-11"
+  },
+  "TPL": {
+    "cik": "0001811074",
+    "company": "Texas Pacific Land",
+    "last_10k": "2026-02-18"
+  },
+  "TPR": {
+    "cik": "0001116132",
+    "company": "Tapestry Inc.",
+    "last_10k": "2025-08-14"
+  },
+  "TRGP": {
+    "cik": "0001389170",
+    "company": "Targa Resources",
+    "last_10k": "2026-02-19"
+  },
+  "TRMB": {
+    "cik": "0000864749",
+    "company": "Trimble Inc.",
+    "last_10k": "2026-02-25"
+  },
+  "TROW": {
+    "cik": "0001113169",
+    "company": "T. Rowe Price",
+    "last_10k": "2026-02-13"
+  },
+  "TRV": {
+    "cik": "0000086312",
+    "company": "Travelers Companies",
+    "last_10k": "2026-02-12"
+  },
+  "TSCO": {
+    "cik": "0000916365",
+    "company": "Tractor Supply",
+    "last_10k": "2026-02-19"
+  },
+  "TSLA": {
+    "cik": "0001318605",
+    "company": "Tesla Inc.",
+    "last_10k": "2026-01-29"
+  },
+  "TSN": {
+    "cik": "0000100493",
+    "company": "Tyson Foods",
+    "last_10k": "2025-11-10"
+  },
+  "TT": {
+    "cik": "0001466258",
+    "company": "Trane Technologies",
+    "last_10k": "2026-02-05"
+  },
+  "TTWO": {
+    "cik": "0000946581",
+    "company": "Take-Two Interactive",
+    "last_10k": "2026-05-22"
+  },
+  "TXN": {
+    "cik": "0000097476",
+    "company": "Texas Instruments",
+    "last_10k": "2026-02-06"
+  },
+  "TXT": {
+    "cik": "0000217346",
+    "company": "Textron",
+    "last_10k": "2026-02-11"
+  },
+  "TYL": {
+    "cik": "0000860731",
+    "company": "Tyler Technologies",
+    "last_10k": "2026-02-18"
+  },
+  "UAL": {
+    "cik": "0000100517",
+    "company": "United Airlines",
+    "last_10k": "2026-02-12"
+  },
+  "UBER": {
+    "cik": "0001543151",
+    "company": "Uber",
+    "last_10k": "2026-02-13"
+  },
+  "UDR": {
+    "cik": "0000074208",
+    "company": "UDR Inc.",
+    "last_10k": "2026-02-17"
+  },
+  "UHS": {
+    "cik": "0000352915",
+    "company": "Universal Health Services",
+    "last_10k": "2026-02-25"
+  },
+  "ULTA": {
+    "cik": "0001403568",
+    "company": "Ulta Beauty",
+    "last_10k": "2026-03-26"
+  },
+  "UNH": {
+    "cik": "0000731766",
+    "company": "UnitedHealth Group",
+    "last_10k": "2026-03-02"
+  },
+  "UNP": {
+    "cik": "0000100885",
+    "company": "Union Pacific",
+    "last_10k": "2026-02-06"
+  },
+  "UPS": {
+    "cik": "0001090727",
+    "company": "United Parcel Service",
+    "last_10k": "2026-02-17"
+  },
+  "URI": {
+    "cik": "0001067701",
+    "company": "United Rentals",
+    "last_10k": "2026-01-28"
+  },
+  "USB": {
+    "cik": "0000036104",
+    "company": "U.S. Bancorp",
+    "last_10k": "2026-02-23"
+  },
+  "V": {
+    "cik": "0001403161",
+    "company": "Visa Inc.",
+    "last_10k": "2025-11-06"
+  },
+  "VICI": {
+    "cik": "0001705696",
+    "company": "Vici Properties",
+    "last_10k": "2026-02-25"
+  },
+  "VLO": {
+    "cik": "0001035002",
+    "company": "Valero Energy",
+    "last_10k": "2026-02-25"
+  },
+  "VLTO": {
+    "cik": "0001967680",
+    "company": "Veralto",
+    "last_10k": "2026-02-20"
+  },
+  "VMC": {
+    "cik": "0001396009",
+    "company": "Vulcan Materials",
+    "last_10k": "2026-02-19"
+  },
+  "VRSK": {
+    "cik": "0001442145",
+    "company": "Verisk Analytics",
+    "last_10k": "2026-02-18"
+  },
+  "VRSN": {
+    "cik": "0001014473",
+    "company": "Verisign",
+    "last_10k": "2026-02-05"
+  },
+  "VRTX": {
+    "cik": "0000875320",
+    "company": "Vertex Pharmaceuticals",
+    "last_10k": "2026-02-13"
+  },
+  "VST": {
+    "cik": "0001692819",
+    "company": "Vistra Corp.",
+    "last_10k": "2026-02-27"
+  },
+  "VTR": {
+    "cik": "0000740260",
+    "company": "Ventas",
+    "last_10k": "2026-02-06"
+  },
+  "VTRS": {
+    "cik": "0001792044",
+    "company": "Viatris",
+    "last_10k": "2026-02-26"
+  },
+  "VZ": {
+    "cik": "0000732712",
+    "company": "Verizon",
+    "last_10k": "2026-02-17"
+  },
+  "WAB": {
+    "cik": "0000943452",
+    "company": "Wabtec",
+    "last_10k": "2026-02-13"
+  },
+  "WAT": {
+    "cik": "0001000697",
+    "company": "Waters Corporation",
+    "last_10k": "2026-02-23"
+  },
+  "WBD": {
+    "cik": "0001437107",
+    "company": "Warner Bros. Discovery",
+    "last_10k": "2026-02-27"
+  },
+  "WDAY": {
+    "cik": "0001327811",
+    "company": "Workday Inc.",
+    "last_10k": "2026-03-06"
+  },
+  "WDC": {
+    "cik": "0000106040",
+    "company": "Western Digital",
+    "last_10k": "2025-08-14"
+  },
+  "WEC": {
+    "cik": "0000783325",
+    "company": "WEC Energy Group",
+    "last_10k": "2026-02-20"
+  },
+  "WELL": {
+    "cik": "0000766704",
+    "company": "Welltower",
+    "last_10k": "2026-02-12"
+  },
+  "WFC": {
+    "cik": "0000072971",
+    "company": "Wells Fargo",
+    "last_10k": "2026-02-24"
+  },
+  "WM": {
+    "cik": "0000823768",
+    "company": "Waste Management",
+    "last_10k": "2026-02-09"
+  },
+  "WMB": {
+    "cik": "0000107263",
+    "company": "Williams Companies",
+    "last_10k": "2026-02-24"
+  },
+  "WMT": {
+    "cik": "0000104169",
+    "company": "Walmart",
+    "last_10k": "2026-03-13"
+  },
+  "WRB": {
+    "cik": "0000011544",
+    "company": "W. R. Berkley",
+    "last_10k": "2026-02-27"
+  },
+  "WST": {
+    "cik": "0000105770",
+    "company": "West Pharmaceutical Services",
+    "last_10k": "2026-02-17"
+  },
+  "WTW": {
+    "cik": "0001140536",
+    "company": "Willis Towers Watson",
+    "last_10k": "2026-02-25"
+  },
+  "WY": {
+    "cik": "0000106535",
+    "company": "Weyerhaeuser",
+    "last_10k": "2026-02-13"
+  },
+  "WYNN": {
+    "cik": "0001174922",
+    "company": "Wynn Resorts",
+    "last_10k": "2026-03-02"
+  },
+  "XEL": {
+    "cik": "0000072903",
+    "company": "Xcel Energy",
+    "last_10k": "2026-02-25"
+  },
+  "XOM": {
+    "cik": "0000034088",
+    "company": "ExxonMobil",
+    "last_10k": "2026-02-18"
+  },
+  "XYL": {
+    "cik": "0001524472",
+    "company": "Xylem Inc.",
+    "last_10k": "2026-02-25"
+  },
+  "YUM": {
+    "cik": "0001041061",
+    "company": "Yum Brands",
+    "last_10k": "2026-02-20"
+  },
+  "ZBH": {
+    "cik": "0001136869",
+    "company": "Zimmer Biomet",
+    "last_10k": "2026-02-20"
+  },
+  "ZBRA": {
+    "cik": "0000877212",
+    "company": "Zebra Technologies",
+    "last_10k": "2026-02-12"
+  },
+  "ZTS": {
+    "cik": "0001555280",
+    "company": "Zoetis",
+    "last_10k": "2026-02-12"
+  }
+}

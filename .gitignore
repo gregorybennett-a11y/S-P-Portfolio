@@ -1,0 +1,54 @@
+# Environment & secrets
+.env
+*.env
+secrets.toml
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Local pipeline build artifacts
+sp500/build_tmp/
+sp500/__pycache__/
+sp500/dist/SP500Pipeline.exe
+sp500/dist/*.parquet
+sp500/dist/sp500_history.csv
+sp500/dist/edgar_upsert.log
+sp500/dist/pipeline.log
+sp500/*.parquet
+sp500/sp500_financial_data.xlsx
+sp500/sp500_financial_data_DEMO.xlsx
+sp500/sp500_financials.json
+sp500/server_log.txt
+sp500/run_log.txt
+
+# Large / sensitive local files
+sp500_history.parquet
+sp500_history.csv
+sp500_financials.json
+sp500_fetch.py
+
+# SEC filing archives (large, not needed for app)
+delete/
+
+# Other company PDF reports
+SCH/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
