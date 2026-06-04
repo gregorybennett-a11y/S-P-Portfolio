@@ -397,7 +397,7 @@ def make_projection_summary_chart(
     ))
     fig.add_trace(go.Bar(
         x=years_str, y=safe_list(ni_base), name="Net Income (Base)",
-        marker_color="#3fb950cc", offsetgroup=1,
+        marker_color="rgba(63,185,80,0.80)", offsetgroup=1,
     ))
     fig.add_trace(go.Scatter(
         x=years_str, y=safe_list(rev_bear), name="Rev Bear",
