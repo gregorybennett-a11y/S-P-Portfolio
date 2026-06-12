@@ -2,8 +2,8 @@ name: Auto-update S&P 500 data
 
 on:
   schedule:
-    # Every 12 hours (06:17 and 18:17 UTC — offset to avoid GitHub's busy on-the-hour queue)
-    - cron: "17 6,18 * * *"
+    # Every 4 hours at :17 (offset to avoid GitHub's busy on-the-hour queue)
+    - cron: "17 */4 * * *"
   workflow_dispatch: {}   # allows manual "Run workflow" button on GitHub
 
 permissions:

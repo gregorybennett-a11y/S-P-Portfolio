@@ -1256,6 +1256,10 @@ def page_login() -> None:
                         rec = load_accounts().get("students", {}).get(u, {})
                         auth["professor"] = rec.get("professor")
                     st.session_state["auth"] = auth
+                    # Fresh data on login: re-read portfolio/accounts and live prices
+                    st.session_state["gh_v"] = st.session_state.get("gh_v", 0) + 1
+                    fetch_live_price.clear()
+                    fetch_price_history.clear()
                     st.rerun()
                 else:
                     st.error("Invalid username or password.")
@@ -1491,7 +1495,13 @@ def main() -> None:
 
     st.sidebar.markdown("## 📈 S&P 500 Analytics")
     st.sidebar.caption(f"Signed in as **{auth['username']}** · {role}")
-    if st.sidebar.button("🚪 Log out", use_container_width=True):
+    c1, c2 = st.sidebar.columns(2)
+    if c1.button("🔄 Refresh", use_container_width=True, help="Re-fetch live prices and the latest portfolio"):
+        st.session_state["gh_v"] = st.session_state.get("gh_v", 0) + 1
+        fetch_live_price.clear()
+        fetch_price_history.clear()
+        st.rerun()
+    if c2.button("🚪 Log out", use_container_width=True):
         st.session_state.pop("auth", None)
         st.rerun()
     st.sidebar.markdown("---")
