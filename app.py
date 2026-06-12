@@ -1,7 +1,7 @@
 """
 S&P 500 Financial Analytics — Streamlit App
 ============================================
-My Portfolio (browser-saved) · Sector overview · Stock screener
+Admin / Professor / Student accounts · Shared class portfolio
 10-year financial history · Bear / Base / Bull projections to 2030
 Live prices via yfinance · Data auto-updated via GitHub Actions
 
@@ -169,30 +169,157 @@ def fetch_price_history(ticker: str, period: str = "1y") -> pd.DataFrame | None:
         return None
 
 
-# ── Personal portfolio (browser-saved, zero server storage) ──────────────────
-# The portfolio lives in the URL (?pf=AAPL,MSFT,...) and in this browser tab's
-# session. Nothing is written server-side, so any number of users can have
-# their own portfolio without building up storage or write conflicts.
-# Bookmarking the page preserves it across visits.
+# ── GitHub-backed storage (accounts + shared class portfolio) ────────────────
+# Accounts and the class portfolio are stored as JSON on a separate branch
+# ("appdata") of the GitHub repo, written via the GitHub API using a token in
+# Streamlit secrets. A non-default branch is used so saves do NOT trigger a
+# Streamlit redeploy. Survives restarts; tiny write volume for a class.
+
+import base64
+import hashlib
+import secrets as _pysecrets
+from datetime import datetime, timezone
+
+import requests as _rq
+
+ACCOUNTS_PATH = "data/accounts.json"
+CLASS_PF_PATH = "data/class_portfolio.json"
+
+
+def _gh_cfg():
+    try:
+        gh = st.secrets["github"]
+        return gh["token"], gh["repo"], gh.get("branch", "appdata")
+    except Exception:
+        return None, None, None
+
+
+def _gh_headers(token: str) -> dict:
+    return {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+
+
+def _gh_ensure_branch(token: str, repo: str, branch: str) -> bool:
+    r = _rq.get(f"https://api.github.com/repos/{repo}/branches/{branch}",
+                headers=_gh_headers(token), timeout=15)
+    if r.status_code == 200:
+        return True
+    rd = _rq.get(f"https://api.github.com/repos/{repo}", headers=_gh_headers(token), timeout=15)
+    default = rd.json().get("default_branch", "main")
+    rs = _rq.get(f"https://api.github.com/repos/{repo}/git/ref/heads/{default}",
+                 headers=_gh_headers(token), timeout=15)
+    sha = rs.json().get("object", {}).get("sha")
+    if not sha:
+        return False
+    rc = _rq.post(f"https://api.github.com/repos/{repo}/git/refs", headers=_gh_headers(token),
+                  json={"ref": f"refs/heads/{branch}", "sha": sha}, timeout=15)
+    return rc.status_code in (200, 201)
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def _gh_read_json(path: str, _v: int = 0):
+    """Read a JSON file from the appdata branch. _v busts the cache after writes."""
+    token, repo, branch = _gh_cfg()
+    if not token:
+        return None
+    r = _rq.get(f"https://api.github.com/repos/{repo}/contents/{path}",
+                params={"ref": branch}, headers=_gh_headers(token), timeout=15)
+    if r.status_code != 200:
+        return None
+    return json.loads(base64.b64decode(r.json()["content"]))
+
+
+def gh_read(path: str):
+    return _gh_read_json(path, st.session_state.get("gh_v", 0))
+
+
+def gh_write(path: str, obj: dict, message: str) -> bool:
+    token, repo, branch = _gh_cfg()
+    if not token:
+        st.error("Storage isn't configured — the site owner must add the [github] section to Streamlit secrets.")
+        return False
+    _gh_ensure_branch(token, repo, branch)
+    url = f"https://api.github.com/repos/{repo}/contents/{path}"
+    r = _rq.get(url, params={"ref": branch}, headers=_gh_headers(token), timeout=15)
+    sha = r.json().get("sha") if r.status_code == 200 else None
+    payload = {
+        "message": message, "branch": branch,
+        "content": base64.b64encode(json.dumps(obj, indent=2).encode()).decode(),
+    }
+    if sha:
+        payload["sha"] = sha
+    r = _rq.put(url, headers=_gh_headers(token), json=payload, timeout=20)
+    ok = r.status_code in (200, 201)
+    if ok:
+        st.session_state["gh_v"] = st.session_state.get("gh_v", 0) + 1
+    else:
+        st.error(f"Save failed (HTTP {r.status_code}). Check the GitHub token's Contents permission.")
+    return ok
+
+
+# ── Accounts & authentication ─────────────────────────────────────────────────
+
+def _hash_pw(pw: str, salt: str) -> str:
+    return hashlib.sha256((salt + pw).encode()).hexdigest()
+
+
+def load_accounts() -> dict:
+    return gh_read(ACCOUNTS_PATH) or {"professors": {}, "students": {}}
+
+
+def add_account(role_key: str, username: str, pw: str, created_by: str) -> bool:
+    acc = load_accounts()
+    salt = _pysecrets.token_hex(8)
+    acc.setdefault(role_key, {})[username] = {
+        "salt": salt, "hash": _hash_pw(pw, salt),
+        "created_by": created_by,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    return gh_write(ACCOUNTS_PATH, acc, f"Add {role_key[:-1]} account: {username}")
+
+
+def delete_account(role_key: str, username: str) -> bool:
+    acc = load_accounts()
+    if username in acc.get(role_key, {}):
+        del acc[role_key][username]
+        return gh_write(ACCOUNTS_PATH, acc, f"Delete {role_key[:-1]} account: {username}")
+    return False
+
+
+def check_login(username: str, pw: str) -> str | None:
+    """Returns 'admin' / 'professor' / 'student' or None."""
+    try:
+        a = st.secrets["auth"]
+        if username == a["admin_username"] and pw == a["admin_password"]:
+            return "admin"
+    except Exception:
+        pass
+    acc = load_accounts()
+    for role_key, role in (("professors", "professor"), ("students", "student")):
+        u = acc.get(role_key, {}).get(username)
+        if u and _hash_pw(pw, u["salt"]) == u["hash"]:
+            return role
+    return None
+
+
+def current_role() -> str:
+    return st.session_state.get("auth", {}).get("role", "student")
+
+
+# ── Shared class portfolio (professor-managed, students view) ─────────────────
 
 def get_portfolio(valid_tickers: list[str]) -> list[str]:
-    """Load the portfolio from session state, falling back to the URL."""
-    if "portfolio" not in st.session_state:
-        raw = st.query_params.get("pf", "")
-        tickers = [t.strip().upper() for t in raw.split(",") if t.strip()]
-        valid = set(valid_tickers)
-        st.session_state.portfolio = [t for t in tickers if t in valid][:MAX_PORTFOLIO_SIZE]
-    return st.session_state.portfolio
+    data = gh_read(CLASS_PF_PATH) or {}
+    valid = set(valid_tickers)
+    return [t for t in data.get("tickers", []) if t in valid][:MAX_PORTFOLIO_SIZE]
 
 
-def save_portfolio(tickers: list[str]) -> None:
-    """Persist to session state + URL so a bookmark restores it."""
+def save_portfolio(tickers: list[str]) -> bool:
     tickers = list(dict.fromkeys(tickers))[:MAX_PORTFOLIO_SIZE]  # dedupe, cap
-    st.session_state.portfolio = tickers
-    if tickers:
-        st.query_params["pf"] = ",".join(tickers)
-    else:
-        st.query_params.pop("pf", None)
+    user = st.session_state.get("auth", {}).get("username", "?")
+    return gh_write(CLASS_PF_PATH, {
+        "tickers": tickers, "updated_by": user,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }, f"Update class portfolio ({user})")
 
 
 # ── Formatting helpers ─────────────────────────────────────────────────────────
@@ -606,15 +733,16 @@ def page_stock_detail(df: pd.DataFrame) -> None:
           <div style="font-size:0.8rem;color:#8b949e;margin-top:0.15rem">{sector}</div>
         </div>
         """, unsafe_allow_html=True)
-        portfolio = get_portfolio(all_tickers)
-        if ticker in portfolio:
-            if st.button(f"✓ In portfolio — remove {ticker}", key="pf_remove"):
-                save_portfolio([t for t in portfolio if t != ticker])
-                st.rerun()
-        elif len(portfolio) < MAX_PORTFOLIO_SIZE:
-            if st.button(f"➕ Add {ticker} to My Portfolio", key="pf_add"):
-                save_portfolio(portfolio + [ticker])
-                st.rerun()
+        if current_role() in ("professor", "admin"):
+            portfolio = get_portfolio(all_tickers)
+            if ticker in portfolio:
+                if st.button(f"✓ In class portfolio — remove {ticker}", key="pf_remove"):
+                    save_portfolio([t for t in portfolio if t != ticker])
+                    st.rerun()
+            elif len(portfolio) < MAX_PORTFOLIO_SIZE:
+                if st.button(f"➕ Add {ticker} to Class Portfolio", key="pf_add"):
+                    save_portfolio(portfolio + [ticker])
+                    st.rerun()
     with col_price:
         with st.spinner("Fetching price…"):
             px_data = fetch_live_price(ticker)
@@ -842,25 +970,31 @@ def _portfolio_builder(df: pd.DataFrame, existing: list[str]) -> None:
 
 
 def page_portfolio(df: pd.DataFrame) -> None:
-    """Personal portfolio: first-visit builder, then a live dashboard."""
+    """Shared class portfolio: professor edits, students view."""
     all_tickers = get_all_tickers(df)
     portfolio = get_portfolio(all_tickers)
+    can_edit = current_role() in ("professor", "admin")
 
-    # ── First visit: onboarding builder ──
+    # ── No portfolio yet ──
     if not portfolio:
-        st.title("💼 Build Your Portfolio")
-        st.markdown(
-            "Welcome! Pick the S&P 500 stocks you want to follow and create your "
-            "own personalized portfolio. It's saved **in your browser's URL** — "
-            "no account needed. After saving, **bookmark the page** to keep it."
-        )
-        _portfolio_builder(df, [])
+        if can_edit:
+            st.title("💼 Build the Class Portfolio")
+            st.markdown(
+                "Pick the S&P 500 stocks for your class (up to "
+                f"{MAX_PORTFOLIO_SIZE}). Students will see exactly this "
+                "portfolio when they log in."
+            )
+            _portfolio_builder(df, [])
+        else:
+            st.title("💼 Class Portfolio")
+            st.info("Your professor hasn't added stocks yet — check back soon!")
         return
 
-    # ── Returning user: dashboard ──
-    st.title("💼 My Portfolio")
+    # ── Dashboard ──
+    st.title("💼 Class Portfolio")
     st.caption(
-        f"{len(portfolio)} holdings · saved in your URL — bookmark this page to keep it"
+        f"{len(portfolio)} holdings · " +
+        ("students see this portfolio when they log in" if can_edit else "managed by your professor")
     )
 
     latest_year = int(df[df["revenue_m"].notna()]["year"].max())
@@ -958,9 +1092,10 @@ def page_portfolio(df: pd.DataFrame) -> None:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-    st.divider()
-    with st.expander("✏️ Edit Portfolio", expanded=False):
-        _portfolio_builder(df, portfolio)
+    if can_edit:
+        st.divider()
+        with st.expander("✏️ Edit Class Portfolio", expanded=False):
+            _portfolio_builder(df, portfolio)
 
 
 def page_risk_analysis(df: pd.DataFrame) -> None:
@@ -1056,54 +1191,247 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
         st.plotly_chart(fig4, use_container_width=True)
 
 
+# ── Login & account pages ─────────────────────────────────────────────────────
+
+def page_login() -> None:
+    st.title("📈 S&P 500 Analytics — Sign In")
+    token, _, _ = _gh_cfg()
+    if not token:
+        st.warning(
+            "⚙️ Account storage isn't configured yet. The site owner must add "
+            "the `[auth]` and `[github]` sections to Streamlit secrets "
+            "(app menu → Settings → Secrets)."
+        )
+    with st.form("login"):
+        u = st.text_input("Username")
+        pw = st.text_input("Password", type="password")
+        if st.form_submit_button("Sign in", type="primary", use_container_width=True):
+            role = check_login(u.strip(), pw)
+            if role:
+                st.session_state["auth"] = {"username": u.strip(), "role": role}
+                st.rerun()
+            else:
+                st.error("Invalid username or password.")
+    st.caption("Students: ask your professor for your login.")
+
+
+def _account_manager(role_key: str, role_label: str) -> None:
+    """Shared add/delete UI for student or professor accounts."""
+    me = st.session_state["auth"]["username"]
+    acc = load_accounts()
+    users = acc.get(role_key, {})
+
+    st.subheader(f"Add a {role_label}")
+    with st.form(f"add_{role_key}", clear_on_submit=True):
+        c1, c2 = st.columns(2)
+        u = c1.text_input("Username")
+        pw = c2.text_input("Password", type="password")
+        if st.form_submit_button(f"➕ Create {role_label} account", type="primary"):
+            u = u.strip()
+            taken = set(acc.get("students", {})) | set(acc.get("professors", {}))
+            if not u or not pw:
+                st.warning("Enter both a username and a password.")
+            elif u in taken:
+                st.warning(f"'{u}' already exists.")
+            elif add_account(role_key, u, pw, me):
+                st.success(f"{role_label.title()} '{u}' created — share the username and password with them.")
+                st.rerun()
+
+    st.divider()
+    st.subheader(f"Current {role_label}s ({len(users)})")
+    if not users:
+        st.caption(f"No {role_label} accounts yet.")
+    for u, info in sorted(users.items()):
+        c1, c2, c3 = st.columns([2, 2, 1])
+        c1.markdown(f"**{u}**")
+        c2.caption(f"added by {info.get('created_by', '?')} · {str(info.get('created_at', ''))[:10]}")
+        if c3.button("🗑️ Delete", key=f"del_{role_key}_{u}"):
+            st.session_state["pending_delete"] = (role_key, u)
+            st.rerun()
+
+    # ── Typed confirmation before any delete ──
+    pending = st.session_state.get("pending_delete")
+    if pending and pending[0] == role_key:
+        _, name = pending
+        st.divider()
+        st.warning(f"⚠️ You are about to permanently delete the {role_label} account **{name}**.")
+        typed = st.text_input(f"Type the username ({name}) to confirm:", key="confirm_del_text")
+        c1, c2 = st.columns(2)
+        if c1.button("✅ Yes, delete this account", type="primary", use_container_width=True):
+            if typed.strip() == name:
+                delete_account(role_key, name)
+                st.session_state.pop("pending_delete", None)
+                st.rerun()
+            else:
+                st.error("Username doesn't match — account was NOT deleted.")
+        if c2.button("Cancel", use_container_width=True):
+            st.session_state.pop("pending_delete", None)
+            st.rerun()
+
+
+def page_manage_students() -> None:
+    st.title("👥 Manage Student Accounts")
+    st.caption("Students can sign in and view the class portfolio — they cannot edit it.")
+    _account_manager("students", "student")
+
+
+def page_manage_professors() -> None:
+    st.title("🎓 Manage Professor Accounts")
+    st.caption("Professors can edit the class portfolio and manage student accounts.")
+    _account_manager("professors", "professor")
+
+
+# ── Role-specific how-to ──────────────────────────────────────────────────────
+
+def page_howto(role: str) -> None:
+    st.title("❓ How to Use This App")
+
+    common_view = """
+**💼 Class Portfolio** — the home page. Shows every stock in the portfolio with
+live prices (refreshed every 5 minutes from Yahoo Finance), today's gainers and
+losers, a sector mix chart, and the portfolio's combined 10-year revenue.
+
+**🏠 Overview** — sector-by-sector summary of the portfolio companies, plus a
+year-by-year recap of what happened in the market since 2015.
+
+**🔍 Stock Screener** — a sortable table of the portfolio companies. Filter by
+sector, search by ticker, and sort by revenue, net income, EPS, or P/E.
+
+**📊 Stock Detail** — pick any company to see its live price chart, 10 years of
+financials, and Bear / Base / Bull projections to 2030. The growth-rate slider
+lets you test "what if" scenarios — it only changes the charts on your screen.
+
+**⚠️ Risk Analysis** — compares the portfolio companies: revenue by sector,
+margins, and debt-vs-return scatter.
+
+ℹ️ Financial data comes from official SEC 10-K filings and updates automatically
+twice a day — nobody needs to upload anything.
+"""
+
+    if role == "student":
+        st.markdown(f"""
+### Signing in
+Your professor creates your username and password and gives them to you. If you
+forget your password, ask your professor — they can delete your account and make
+a new one.
+
+### What you'll see
+Everything in this app is filtered to **your class portfolio** — the set of
+stocks your professor picked. You can look at every chart, table, and projection,
+but only your professor can add or remove stocks.
+
+### The pages
+{common_view}
+""")
+    elif role == "professor":
+        st.markdown(f"""
+### Your role
+You manage the **class portfolio** and the **student accounts**. Students see
+exactly the portfolio you build — view-only.
+
+### Building the portfolio
+On **💼 Class Portfolio**, use the picker to choose up to {MAX_PORTFOLIO_SIZE}
+S&P 500 stocks, then hit **Save**. To change it later, open **✏️ Edit Class
+Portfolio** at the bottom of that page. You can also add or remove a single
+stock from its **📊 Stock Detail** page.
+
+### Exploring beyond the portfolio
+The sidebar toggle **"💼 Portfolio companies only"** is on by default. Turn it
+off to browse all S&P 500 companies — useful when deciding what to add.
+
+### Managing students
+On **👥 Manage Students**, create an account by typing a username and password,
+then share those with the student. To delete an account you'll be asked to
+re-type the username as confirmation — deletions are permanent.
+
+### The pages
+{common_view}
+""")
+    else:  # admin
+        st.markdown(f"""
+### Your role
+You have full control: everything a professor can do, **plus** creating and
+deleting professor accounts on **🎓 Manage Professors** (same typed-confirmation
+rule as student deletions).
+
+### Typical setup flow
+1. Create a professor account on **🎓 Manage Professors** and send them the login.
+2. The professor builds the class portfolio and creates student logins.
+3. Students sign in and see the portfolio, view-only.
+
+### How it all works under the hood
+- **Accounts & portfolio** are stored as JSON on the `appdata` branch of your
+  GitHub repo, written via the API token in Streamlit secrets. Saves there do
+  **not** trigger a redeploy. Passwords are stored salted + hashed.
+- **Financial data** (`data/sp500_financials.csv` on `main`) is refreshed by a
+  GitHub Action every 12 hours from SEC EDGAR. You can run it manually from the
+  repo's **Actions** tab → "Auto-update S&P 500 data" → Run workflow.
+- **Admin login** comes from the `[auth]` section in Streamlit secrets — change
+  it there anytime (app menu → Settings → Secrets).
+
+### The pages
+{common_view}
+""")
+
+
 # ── Sidebar navigation ────────────────────────────────────────────────────────
 def main() -> None:
     df = load_data()
     if df.empty:
         return
 
+    # ── Login gate ──
+    auth = st.session_state.get("auth")
+    if not auth:
+        page_login()
+        return
+    role = auth["role"]
+
     st.sidebar.markdown("## 📈 S&P 500 Analytics")
+    st.sidebar.caption(f"Signed in as **{auth['username']}** · {role}")
+    if st.sidebar.button("🚪 Log out", use_container_width=True):
+        st.session_state.pop("auth", None)
+        st.rerun()
     st.sidebar.markdown("---")
 
     pages = {
-        "💼 My Portfolio":     "portfolio",
+        "💼 Class Portfolio":  "portfolio",
         "🏠 Overview":         "overview",
         "🔍 Stock Screener":   "screener",
         "📊 Stock Detail":     "stock",
-        "Risk Analysis":    "risk",
+        "⚠️ Risk Analysis":    "risk",
     }
+    if role in ("professor", "admin"):
+        pages["👥 Manage Students"] = "students"
+    if role == "admin":
+        pages["🎓 Manage Professors"] = "professors"
+    pages["❓ How to Use"] = "howto"
+
     page_label = st.sidebar.radio("Navigate", list(pages.keys()), label_visibility="collapsed")
     page = pages[page_label]
 
-    # ── Portfolio-wide filter ─────────────────────────────────────────────────
-    # When the user has a portfolio, every page can be filtered to just their
-    # holdings. Toggle off to explore all companies (and add new ones).
+    # ── Portfolio-wide filtering by role ──
     portfolio = get_portfolio(get_all_tickers(df))
-
-    # New users see nothing until they build a portfolio
-    if not portfolio and page != "portfolio":
-        st.title("💼 Welcome — build your portfolio first")
-        st.markdown(
-            "This app is personalized to **your** portfolio. Head to "
-            "**💼 My Portfolio** in the sidebar and pick the S&P 500 stocks "
-            "you want to follow — then every page (Overview, Screener, "
-            "Stock Detail, Risk Analysis) will show your companies."
-        )
-        st.info("Once saved, use the sidebar toggle to explore all 487 companies and add more anytime.")
-        return
-
     df_view = df
-    if portfolio:
+    if role == "student":
+        # Students only ever see the class portfolio
+        if portfolio:
+            df_view = df[df["ticker"].isin(portfolio)]
+        elif page not in ("howto", "portfolio"):
+            st.title("💼 Class Portfolio")
+            st.info("Your professor hasn't added stocks yet — check back soon!")
+            return
+    elif portfolio:
         st.sidebar.markdown("---")
         pf_only = st.sidebar.toggle(
-            "💼 My portfolio only",
+            "💼 Portfolio companies only",
             value=True,
             key="pf_only_toggle",
-            help="Filter every page to just your holdings. Turn off to explore all companies and add new ones.",
+            help="Filter pages to the class portfolio. Turn off to explore all companies and add new ones.",
         )
         if pf_only:
             df_view = df[df["ticker"].isin(portfolio)]
-            st.sidebar.caption(f"Filtered to your {len(portfolio)} holdings")
+            st.sidebar.caption(f"Filtered to the {len(portfolio)} portfolio companies")
         else:
             st.sidebar.caption(f"Exploring all {df['ticker'].nunique()} companies")
 
@@ -1113,7 +1441,7 @@ def main() -> None:
     st.sidebar.caption("Fundamentals: SEC EDGAR 10-K pipeline")
 
     if page == "portfolio":
-        page_portfolio(df)          # builder always needs the full universe
+        page_portfolio(df)          # builder needs the full universe
     elif page == "overview":
         page_overview(df_view)
     elif page == "screener":
@@ -1122,6 +1450,12 @@ def main() -> None:
         page_stock_detail(df_view)
     elif page == "risk":
         page_risk_analysis(df_view)
+    elif page == "students":
+        page_manage_students()
+    elif page == "professors":
+        page_manage_professors()
+    elif page == "howto":
+        page_howto(role)
 
 
 if __name__ == "__main__":
