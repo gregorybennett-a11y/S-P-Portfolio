@@ -1236,6 +1236,16 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
 # ── Login & account pages ─────────────────────────────────────────────────────
 
 def page_login() -> None:
+    # Center the sign-in at 40% width on desktop (full width on phones/tablets)
+    st.markdown("""
+    <style>
+    @media (min-width: 992px) {
+      [data-testid="stMainBlockContainer"], section.main > div.block-container {
+        max-width: 40vw; margin-left: auto; margin-right: auto;
+      }
+    }
+    </style>
+    """, unsafe_allow_html=True)
     st.title("📈 S&P 500 Analytics — Sign In")
     token, _, _ = _gh_cfg()
     if not token:
