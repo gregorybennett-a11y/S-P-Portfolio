@@ -5,6 +5,12 @@
       "hash": "021eb0f2eedcff9abd7f1a3eac1a7e78794622f258ddd9e96697b49f960cfec7",
       "created_by": "self-registered",
       "created_at": "2026-06-12T19:06:00.239314+00:00"
+    },
+    "dadrobble": {
+      "salt": "91f7b45d65ed2df3",
+      "hash": "603d71a7c5ea8dcc3489aff8833387de70e9025649f87559fafc91d0aa4d8e0d",
+      "created_by": "self-registered",
+      "created_at": "2026-06-12T19:50:36.168295+00:00"
     }
   },
   "students": {}
