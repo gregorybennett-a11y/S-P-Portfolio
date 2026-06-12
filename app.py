@@ -79,6 +79,14 @@ SCENARIO_COLOR = {"Bear": "#f85149", "Base": "#e3b341", "Bull": "#3fb950"}
 
 MAX_PORTFOLIO_SIZE = 503  # whole S&P 500 — prices are batch-fetched so size is not a problem
 
+# Public demo mode (set True by demo_app.py): no login, manage pages hidden,
+# portfolio edits live only in the visitor's session — nothing is saved.
+DEMO_MODE = False
+DEMO_PORTFOLIO = [
+    "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "BRK-B", "JPM",
+    "V", "JNJ", "XOM", "WMT", "PG", "KO", "DIS", "NFLX", "AMD", "CRM", "COST",
+]
+
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -352,6 +360,8 @@ def check_login(username: str, pw: str) -> str | None:
 
 
 def current_role() -> str:
+    if DEMO_MODE:
+        return "professor"  # full edit UI, but nothing persists
     return st.session_state.get("auth", {}).get("role", "student")
 
 
@@ -374,6 +384,9 @@ def portfolio_owner() -> str | None:
 
 
 def get_portfolio(valid_tickers: list[str]) -> list[str]:
+    if DEMO_MODE:
+        valid = set(valid_tickers)
+        return [t for t in st.session_state.get("demo_portfolio", DEMO_PORTFOLIO) if t in valid]
     owner = portfolio_owner()
     if not owner:
         return []
@@ -383,6 +396,9 @@ def get_portfolio(valid_tickers: list[str]) -> list[str]:
 
 
 def save_portfolio(tickers: list[str]) -> bool:
+    if DEMO_MODE:
+        st.session_state["demo_portfolio"] = list(dict.fromkeys(tickers))[:MAX_PORTFOLIO_SIZE]
+        return True
     owner = portfolio_owner()
     if not owner:
         return False
@@ -1061,10 +1077,13 @@ def page_portfolio(df: pd.DataFrame) -> None:
 
     # ── Dashboard ──
     st.title("💼 Class Portfolio")
-    st.caption(
-        f"{len(portfolio)} holdings · " +
-        ("students see this portfolio when they log in" if can_edit else "managed by your professor")
-    )
+    if DEMO_MODE:
+        st.caption(f"{len(portfolio)} holdings · demo portfolio — add or remove stocks freely, nothing is saved")
+    else:
+        st.caption(
+            f"{len(portfolio)} holdings · " +
+            ("students see this portfolio when they log in" if can_edit else "managed by your professor")
+        )
 
     pf_latest = latest_per_ticker(df[df["ticker"].isin(portfolio)])
 
@@ -1424,6 +1443,23 @@ def page_manage_professors() -> None:
 def page_howto(role: str) -> None:
     st.title("❓ How to Use This App")
 
+    if DEMO_MODE:
+        st.markdown("""
+### Welcome to the public demo
+This is a fully working copy of a classroom app where professors build a stock
+portfolio and their students study it. Here, **you** play the professor: edit
+the portfolio on **💼 Class Portfolio** (or from any stock's detail page), and
+every other page filters to your picks. Changes last for your browser session
+only — refresh and it resets.
+
+The production version adds logins: an admin creates professors, professors
+manage their own class portfolio and student accounts, and students get
+view-only access. Financial data is pulled automatically from SEC EDGAR 10-K
+filings every 4 hours via a GitHub Actions pipeline; prices are live from
+Yahoo Finance.
+""")
+        return
+
     common_view = """
 **💼 Class Portfolio** — the home page. Shows every stock in the portfolio with
 live prices (refreshed every 5 minutes from Yahoo Finance), today's gainers and
@@ -1524,7 +1560,9 @@ def main() -> None:
     if df.empty:
         return
 
-    # ── Login gate ──
+    # ── Login gate (skipped entirely in the public demo) ──
+    if DEMO_MODE:
+        st.session_state.setdefault("auth", {"username": "demo", "role": "professor"})
     auth = st.session_state.get("auth")
     if not auth:
         page_login()
@@ -1532,16 +1570,24 @@ def main() -> None:
     role = auth["role"]
 
     st.sidebar.markdown("## 📈 S&P 500 Analytics")
-    st.sidebar.caption(f"Signed in as **{auth['username']}** · {role}")
-    c1, c2 = st.sidebar.columns(2)
-    if c1.button("🔄 Refresh", use_container_width=True, help="Re-fetch live prices and the latest portfolio"):
-        st.session_state["gh_v"] = st.session_state.get("gh_v", 0) + 1
-        fetch_live_price.clear()
-        fetch_price_history.clear()
-        st.rerun()
-    if c2.button("🚪 Log out", use_container_width=True):
-        st.session_state.pop("auth", None)
-        st.rerun()
+    if DEMO_MODE:
+        st.sidebar.caption("🌐 Public demo — explore freely! Portfolio edits last for your session only.")
+        if st.sidebar.button("🔄 Refresh prices", use_container_width=True):
+            fetch_live_price.clear()
+            fetch_live_prices_bulk.clear()
+            fetch_price_history.clear()
+            st.rerun()
+    else:
+        st.sidebar.caption(f"Signed in as **{auth['username']}** · {role}")
+        c1, c2 = st.sidebar.columns(2)
+        if c1.button("🔄 Refresh", use_container_width=True, help="Re-fetch live prices and the latest portfolio"):
+            st.session_state["gh_v"] = st.session_state.get("gh_v", 0) + 1
+            fetch_live_price.clear()
+            fetch_price_history.clear()
+            st.rerun()
+        if c2.button("🚪 Log out", use_container_width=True):
+            st.session_state.pop("auth", None)
+            st.rerun()
     st.sidebar.markdown("---")
 
     if role == "admin":
@@ -1561,9 +1607,9 @@ def main() -> None:
         "📊 Stock Detail":     "stock",
         "⚠️ Risk Analysis":    "risk",
     }
-    if role in ("professor", "admin"):
+    if role in ("professor", "admin") and not DEMO_MODE:
         pages["👥 Manage Students"] = "students"
-    if role == "admin":
+    if role == "admin" and not DEMO_MODE:
         pages["🎓 Manage Professors"] = "professors"
     pages["❓ How to Use"] = "howto"
 
