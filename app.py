@@ -311,11 +311,15 @@ def check_login(username: str, pw: str) -> str | None:
             return "admin"
     except Exception:
         pass
-    acc = load_accounts()
-    for role_key, role in (("professors", "professor"), ("students", "student")):
-        u = acc.get(role_key, {}).get(username)
-        if u and _hash_pw(pw, u["salt"]) == u["hash"]:
-            return role
+    # Two attempts: if the first misses, force a fresh read from GitHub in
+    # case the cached accounts file predates a just-created account.
+    for _ in range(2):
+        acc = load_accounts()
+        for role_key, role in (("professors", "professor"), ("students", "student")):
+            u = acc.get(role_key, {}).get(username)
+            if u and _hash_pw(pw, u["salt"]) == u["hash"]:
+                return role
+        st.session_state["gh_v"] = st.session_state.get("gh_v", 0) + 1
     return None
 
 
