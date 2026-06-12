@@ -493,10 +493,10 @@ def make_metric_chart(
     hist_y = [v for v in hist]
     fig.add_trace(go.Scatter(
         x=hist_x, y=hist_y, name="Historical",
-        line=dict(color=color, width=2.5),
+        line=dict(color=color, width=3),
         fill="tozeroy", fillcolor=rgba(color, 0.09),
         connectgaps=False, mode="lines+markers",
-        marker=dict(size=4), hovertemplate="%{x}: %{y:,.1f}<extra></extra>",
+        marker=dict(size=6), hovertemplate="%{x}: %{y:,.1f}<extra></extra>",
     ))
 
     # Projection scenarios
@@ -524,15 +524,15 @@ def make_metric_chart(
                        showarrow=False, font=dict(size=9, color="#4a5568"), xshift=22)
 
     fig.update_layout(
-        title=dict(text=label, font=dict(size=12, color="#8b949e")),
-        height=260,
-        margin=dict(l=10, r=10, t=35, b=30),
+        title=dict(text=label, font=dict(size=15, color="#c9d1d9")),
+        height=400,
+        margin=dict(l=10, r=10, t=42, b=34),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#080c14",
-        font=dict(color="#8b949e", size=10),
-        legend=dict(orientation="h", y=-0.2, font=dict(size=9)),
-        xaxis=dict(gridcolor="#1c2438", tickfont=dict(size=9), showgrid=False),
-        yaxis=dict(gridcolor="#1c2438", tickfont=dict(size=9)),
+        font=dict(color="#8b949e", size=12),
+        legend=dict(orientation="h", y=-0.18, font=dict(size=11)),
+        xaxis=dict(gridcolor="#1c2438", tickfont=dict(size=12), showgrid=False),
+        yaxis=dict(gridcolor="#1c2438", tickfont=dict(size=12)),
         hovermode="x unified",
     )
     return fig
@@ -548,11 +548,11 @@ def make_price_chart(hist_df: pd.DataFrame, ticker: str, color: str) -> go.Figur
         hovertemplate="%{x|%b %d, %Y}: $%{y:.2f}<extra></extra>",
     ))
     fig.update_layout(
-        height=300,
+        height=360,
         margin=dict(l=10, r=10, t=30, b=10),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#080c14",
-        font=dict(color="#8b949e", size=10),
+        font=dict(color="#8b949e", size=12),
         xaxis=dict(gridcolor="#1c2438", showgrid=False),
         yaxis=dict(gridcolor="#1c2438", tickprefix="$"),
         showlegend=False,
@@ -610,8 +610,8 @@ def make_projection_summary_chart(
 
     fig.update_layout(
         barmode="group",
-        title=dict(text="Revenue & Net Income Forecast 2026–2030", font=dict(size=11, color="#8b949e")),
-        height=270,
+        title=dict(text="Revenue & Net Income Forecast 2026–2030", font=dict(size=14, color="#c9d1d9")),
+        height=340,
         margin=dict(l=10, r=10, t=35, b=30),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="#080c14",
