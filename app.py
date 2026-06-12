@@ -77,7 +77,7 @@ SECTOR_COLORS = {
 SCENARIO_MULT = {"Bear": 0.55, "Base": 1.0, "Bull": 1.45}
 SCENARIO_COLOR = {"Bear": "#f85149", "Base": "#e3b341", "Bull": "#3fb950"}
 
-MAX_PORTFOLIO_SIZE = 30  # keeps live-price fetches and memory per user bounded
+MAX_PORTFOLIO_SIZE = 503  # whole S&P 500 — prices are batch-fetched so size is not a problem
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -167,6 +167,34 @@ def fetch_live_price(ticker: str) -> dict | None:
     except Exception:
         pass
     return None
+
+
+@st.cache_data(ttl=300, show_spinner=False, max_entries=50)
+def fetch_live_prices_bulk(tickers: tuple) -> dict:
+    """Quotes for many tickers in ONE yfinance download — fast for big portfolios."""
+    if not tickers:
+        return {}
+    try:
+        data = yf.download(list(tickers), period="5d", interval="1d",
+                           group_by="ticker", progress=False, threads=True)
+        out = {}
+        for t in tickers:
+            try:
+                closes = (data[t]["Close"] if len(tickers) > 1 else data["Close"]).dropna()
+                if len(closes):
+                    price = float(closes.iloc[-1])
+                    prev = float(closes.iloc[-2]) if len(closes) >= 2 else None
+                    chg = price - prev if prev else 0.0
+                    out[t] = {
+                        "price": price, "change": chg,
+                        "change_pct": (chg / prev * 100) if prev else 0.0,
+                        "market_cap": None,
+                    }
+            except Exception:
+                continue
+        return out
+    except Exception:
+        return {}
 
 
 @st.cache_data(ttl=900, show_spinner=False, max_entries=300)
@@ -995,10 +1023,9 @@ def _portfolio_builder(df: pd.DataFrame, existing: list[str]) -> None:
     options = sorted(set(choices) | set(existing))
 
     picked = st.multiselect(
-        f"Choose your stocks (max {MAX_PORTFOLIO_SIZE})",
+        "Choose your stocks",
         options,
         default=[t for t in existing if t in options],
-        max_selections=MAX_PORTFOLIO_SIZE,
         placeholder="Type a ticker, e.g. AAPL",
         key="pf_picker",
     )
@@ -1023,9 +1050,8 @@ def page_portfolio(df: pd.DataFrame) -> None:
         if can_edit:
             st.title("💼 Build the Class Portfolio")
             st.markdown(
-                "Pick the S&P 500 stocks for your class (up to "
-                f"{MAX_PORTFOLIO_SIZE}). Students will see exactly this "
-                "portfolio when they log in."
+                "Pick the S&P 500 stocks for your class — as many as you like. "
+                "Students will see exactly this portfolio when they log in."
             )
             _portfolio_builder(df, [])
         else:
@@ -1042,11 +1068,9 @@ def page_portfolio(df: pd.DataFrame) -> None:
 
     pf_latest = latest_per_ticker(df[df["ticker"].isin(portfolio)])
 
-    # Live prices (cached 5 min per ticker)
-    quotes = {}
+    # Live prices — one batched request for the whole portfolio (cached 5 min)
     with st.spinner("Fetching live prices…"):
-        for t in portfolio:
-            quotes[t] = fetch_live_price(t)
+        quotes = fetch_live_prices_bulk(tuple(portfolio))
 
     # Summary metrics
     n_up = sum(1 for q in quotes.values() if q and q["change_pct"] >= 0)
@@ -1445,8 +1469,8 @@ every professor has a separate class. Your students see exactly the portfolio
 you build — view-only. Other professors can't see or change your class.
 
 ### Building the portfolio
-On **💼 Class Portfolio**, use the picker to choose up to {MAX_PORTFOLIO_SIZE}
-S&P 500 stocks, then hit **Save**. To change it later, open **✏️ Edit Class
+On **💼 Class Portfolio**, use the picker to choose any number of S&P 500
+stocks, then hit **Save**. To change it later, open **✏️ Edit Class
 Portfolio** at the bottom of that page. You can also add or remove a single
 stock from its **📊 Stock Detail** page.
 
