@@ -136,6 +136,17 @@ def get_ticker_df(df: pd.DataFrame, ticker: str) -> pd.DataFrame:
     return df[df["ticker"] == ticker].sort_values("year").reset_index(drop=True)
 
 
+@st.cache_data(show_spinner=False)
+def latest_per_ticker(df: pd.DataFrame) -> pd.DataFrame:
+    """Each ticker's most recent year that has revenue data (10-Ks are annual,
+    so 'latest' differs per company depending on fiscal year end)."""
+    have = df[df["revenue_m"].notna()]
+    if have.empty:
+        return have
+    idx = have.groupby("ticker")["year"].idxmax()
+    return have.loc[idx]
+
+
 @st.cache_data(ttl=300, show_spinner=False, max_entries=600)
 def fetch_live_price(ticker: str) -> dict | None:
     """Fetch live quote via yfinance. Cached 5 min."""
@@ -616,16 +627,17 @@ def page_overview(df: pd.DataFrame) -> None:
     st.caption("10-year historical financials · Bear / Base / Bull projections to 2030 · Live prices via Yahoo Finance")
 
     # Top-level stats
-    latest_year = df[df["revenue_m"].notna()]["year"].max()
+    latest = latest_per_ticker(df)
+    latest_year = int(latest["year"].max()) if len(latest) else int(df["year"].max())
     total_tickers = df["ticker"].nunique()
-    total_rev = df[df["year"] == latest_year]["revenue_m"].sum() / 1_000  # → $B
-    total_ni  = df[df["year"] == latest_year]["net_income_m"].sum() / 1_000
+    total_rev = latest["revenue_m"].sum() / 1_000  # → $B
+    total_ni  = latest["net_income_m"].sum() / 1_000
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Companies", f"{total_tickers}")
-    c2.metric("Latest Data Year", str(int(latest_year)))
-    c3.metric(f"Total Revenue ({int(latest_year)})", f"${total_rev:,.0f}B")
-    c4.metric(f"Total Net Income ({int(latest_year)})", f"${total_ni:,.0f}B")
+    c2.metric("Latest Data Year", str(latest_year))
+    c3.metric("Total Revenue (latest filings)", f"${total_rev:,.0f}B")
+    c4.metric("Total Net Income (latest filings)", f"${total_ni:,.0f}B")
 
     st.divider()
     st.subheader("Sectors")
@@ -636,9 +648,9 @@ def page_overview(df: pd.DataFrame) -> None:
         color = SECTOR_COLORS.get(sector, "#7f8c8d")
         sec_df = df[df["sector"] == sector]
         tickers = sorted(sec_df["ticker"].unique())
-        latest = sec_df[sec_df["year"] == latest_year]
-        rev_sum = latest["revenue_m"].sum()
-        ni_sum  = latest["net_income_m"].sum()
+        sec_latest = latest[latest["sector"] == sector]
+        rev_sum = sec_latest["revenue_m"].sum()
+        ni_sum  = sec_latest["net_income_m"].sum()
         with cols[idx % 3]:
             st.markdown(f"""
             <div style="background:#080c14;border:1px solid #1c2438;border-left:3px solid {color};
@@ -672,8 +684,7 @@ def page_screener(df: pd.DataFrame) -> None:
     """Stock screener with filters."""
     st.title("🔍 Stock Screener")
 
-    latest_year = int(df[df["revenue_m"].notna()]["year"].max())
-    latest = df[df["year"] == latest_year].copy()
+    latest = latest_per_ticker(df).copy()
 
     col1, col2, col3 = st.columns([2, 2, 1])
     with col1:
@@ -692,7 +703,7 @@ def page_screener(df: pd.DataFrame) -> None:
         filtered = filtered[filtered["ticker"].str.contains(q, case=False, na=False)]
     filtered = filtered.sort_values(sort_col, ascending=False, na_position="last")
 
-    st.caption(f"Showing {len(filtered)} companies · {latest_year} data")
+    st.caption(f"Showing {len(filtered)} companies · each company's latest 10-K filing")
 
     # Display as a table
     display_cols = {
@@ -971,8 +982,7 @@ def _portfolio_builder(df: pd.DataFrame, existing: list[str]) -> None:
     sectors = ["All Sectors"] + sorted(df["sector"].unique())
     sel_sector = st.selectbox("Filter by sector", sectors, key="pf_sector_filter")
 
-    latest_year = int(df[df["revenue_m"].notna()]["year"].max())
-    latest = df[df["year"] == latest_year]
+    latest = latest_per_ticker(df)
     if sel_sector != "All Sectors":
         choices = sorted(latest[latest["sector"] == sel_sector]["ticker"].unique())
     else:
@@ -1026,8 +1036,7 @@ def page_portfolio(df: pd.DataFrame) -> None:
         ("students see this portfolio when they log in" if can_edit else "managed by your professor")
     )
 
-    latest_year = int(df[df["revenue_m"].notna()]["year"].max())
-    pf_latest = df[(df["ticker"].isin(portfolio)) & (df["year"] == latest_year)]
+    pf_latest = latest_per_ticker(df[df["ticker"].isin(portfolio)])
 
     # Live prices (cached 5 min per ticker)
     quotes = {}
@@ -1043,8 +1052,8 @@ def page_portfolio(df: pd.DataFrame) -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Holdings", f"{len(portfolio)}")
     c2.metric("Up / Down Today", f"🟢 {n_up} / 🔴 {n_dn}")
-    c3.metric(f"Combined Revenue ({latest_year})", fmt_m(total_rev))
-    c4.metric(f"Combined Net Income ({latest_year})", fmt_m(total_ni))
+    c3.metric("Combined Revenue (latest filings)", fmt_m(total_rev))
+    c4.metric("Combined Net Income (latest filings)", fmt_m(total_ni))
 
     st.divider()
 
@@ -1131,8 +1140,8 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
     """Cross-sector risk and performance comparison."""
     st.title("⚠️ Risk & Comparative Analysis")
 
-    latest_year = int(df[df["revenue_m"].notna()]["year"].max())
-    latest = df[df["year"] == latest_year].copy()
+    latest = latest_per_ticker(df).copy()
+    latest_year = int(latest["year"].max()) if len(latest) else int(df["year"].max())
 
     tab1, tab2, tab3 = st.tabs(["Revenue by Sector", "Margin Analysis", "Debt & Coverage"])
 
@@ -1141,7 +1150,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
         fig = px.bar(
             sec_rev, x="sector", y="revenue_m",
             color="sector", color_discrete_map=SECTOR_COLORS,
-            title=f"Total Revenue by Sector ({latest_year})",
+            title="Total Revenue by Sector (latest filings)",
             labels={"revenue_m": "Revenue ($M)", "sector": ""},
         )
         fig.update_layout(
@@ -1155,7 +1164,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
         # Revenue CAGR 2020→latest per sector
         st.subheader("Revenue Growth (2020 → latest)")
         yr_2020 = df[df["year"] == 2020].groupby("sector")["revenue_m"].sum()
-        yr_latest = df[df["year"] == latest_year].groupby("sector")["revenue_m"].sum()
+        yr_latest = latest.groupby("sector")["revenue_m"].sum()
         n_yrs = latest_year - 2020
         cagr_data = []
         for s in yr_2020.index:
@@ -1183,7 +1192,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
         fig3 = px.box(
             margin, x="sector", y="gross_margin_pct",
             color="sector", color_discrete_map=SECTOR_COLORS,
-            title=f"Gross Margin % Distribution by Sector ({latest_year})",
+            title="Gross Margin % Distribution by Sector (latest filings)",
             labels={"gross_margin_pct": "Gross Margin %", "sector": ""},
         )
         fig3.update_layout(
@@ -1209,7 +1218,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
             debt, x="debt_equity", y="roe_pct",
             color="sector", color_discrete_map=SECTOR_COLORS,
             hover_data=["ticker"],
-            title=f"D/E Ratio vs ROE % ({latest_year})",
+            title="D/E Ratio vs ROE % (latest filings)",
             labels={"debt_equity": "Debt / Equity", "roe_pct": "ROE %"},
         )
         fig4.update_layout(
