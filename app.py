@@ -1079,6 +1079,19 @@ def main() -> None:
     # When the user has a portfolio, every page can be filtered to just their
     # holdings. Toggle off to explore all companies (and add new ones).
     portfolio = get_portfolio(get_all_tickers(df))
+
+    # New users see nothing until they build a portfolio
+    if not portfolio and page != "portfolio":
+        st.title("💼 Welcome — build your portfolio first")
+        st.markdown(
+            "This app is personalized to **your** portfolio. Head to "
+            "**💼 My Portfolio** in the sidebar and pick the S&P 500 stocks "
+            "you want to follow — then every page (Overview, Screener, "
+            "Stock Detail, Risk Analysis) will show your companies."
+        )
+        st.info("Once saved, use the sidebar toggle to explore all 487 companies and add more anytime.")
+        return
+
     df_view = df
     if portfolio:
         st.sidebar.markdown("---")
