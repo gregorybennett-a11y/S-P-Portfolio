@@ -94,10 +94,10 @@ st.markdown("""
 .metric-card .mc-val { font-size: 1.3rem; font-weight: 700; color: #e6edf3; }
 .metric-card .mc-sub { font-size: 0.72rem; color: #8b949e; margin-top: 0.1rem; }
 /* Year context */
-.year-card { background: #080c14; border: 1px solid #1c2438; border-radius: 5px;
-    padding: 0.6rem 0.75rem; margin-bottom: 0.4rem; border-left: 3px solid #3d7fe6; }
-.year-card .yc-year { font-size: 0.8rem; font-weight: 700; color: #e6edf3; }
-.year-card .yc-text { font-size: 0.7rem; color: #8b949e; margin-top: 0.2rem; line-height: 1.45; }
+.year-card { background: #080c14; border: 1px solid #1c2438; border-radius: 6px;
+    padding: 0.8rem 0.95rem; margin-bottom: 0.5rem; border-left: 3px solid #3d7fe6; }
+.year-card .yc-year { font-size: 1rem; font-weight: 700; color: #e6edf3; }
+.year-card .yc-text { font-size: 0.85rem; color: #99a3ad; margin-top: 0.25rem; line-height: 1.5; }
 /* Sector badge */
 .sector-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px;
     font-size: 0.7rem; font-weight: 600; }
@@ -657,15 +657,15 @@ def page_overview(df: pd.DataFrame) -> None:
         ni_sum  = sec_latest["net_income_m"].sum()
         with cols[idx % 3]:
             st.markdown(f"""
-            <div style="background:#080c14;border:1px solid #1c2438;border-left:3px solid {color};
-                        border-radius:6px;padding:0.85rem 1rem;margin-bottom:0.6rem">
-              <div style="font-size:0.85rem;font-weight:700;color:#e6edf3">{sector}</div>
-              <div style="font-size:0.72rem;color:#8b949e;margin-top:0.2rem">
+            <div style="background:#080c14;border:1px solid #1c2438;border-left:4px solid {color};
+                        border-radius:8px;padding:1.1rem 1.25rem;margin-bottom:0.75rem">
+              <div style="font-size:1.1rem;font-weight:700;color:#e6edf3">{sector}</div>
+              <div style="font-size:0.92rem;color:#aeb7c2;margin-top:0.3rem">
                 {len(tickers)} companies &nbsp;·&nbsp;
                 Rev: {fmt_m(rev_sum)} &nbsp;·&nbsp;
                 NI: {fmt_m(ni_sum)}
               </div>
-              <div style="margin-top:0.5rem;font-size:0.67rem;color:#4a5568">
+              <div style="margin-top:0.6rem;font-size:0.8rem;color:#6b7687">
                 {" &nbsp;".join(tickers[:12])}{"…" if len(tickers)>12 else ""}
               </div>
             </div>
