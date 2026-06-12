@@ -1261,6 +1261,12 @@ def page_login() -> None:
             st.info("Professor self-registration is disabled — ask the site admin for an account.")
         else:
             st.markdown("Create your professor account. You'll need the **sign-up code** from the site admin.")
+            try:
+                hint = st.secrets["auth"].get("professor_code_hint")
+            except Exception:
+                hint = None
+            if hint:
+                st.info(hint)
             with st.form("register"):
                 code = st.text_input("Sign-up code")
                 u = st.text_input("Choose a username")
