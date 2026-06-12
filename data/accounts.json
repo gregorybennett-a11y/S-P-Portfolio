@@ -20,6 +20,13 @@
       "created_by": "dadrobble",
       "created_at": "2026-06-12T19:55:21.384441+00:00",
       "professor": "dadrobble"
+    },
+    "sue": {
+      "salt": "21fa43af35fc3814",
+      "hash": "bb1a645f3e983852d1bb12e03111d9ef8b2f9f552f9ec23ee506cb7741114eb4",
+      "created_by": "dadrobble",
+      "created_at": "2026-06-12T19:55:30.504867+00:00",
+      "professor": "dadrobble"
     }
   }
 }
