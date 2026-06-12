@@ -183,7 +183,6 @@ from datetime import datetime, timezone
 import requests as _rq
 
 ACCOUNTS_PATH = "data/accounts.json"
-CLASS_PF_PATH = "data/class_portfolio.json"
 
 
 def _gh_cfg():
@@ -266,14 +265,18 @@ def load_accounts() -> dict:
     return gh_read(ACCOUNTS_PATH) or {"professors": {}, "students": {}}
 
 
-def add_account(role_key: str, username: str, pw: str, created_by: str) -> bool:
+def add_account(role_key: str, username: str, pw: str, created_by: str,
+                professor: str | None = None) -> bool:
     acc = load_accounts()
     salt = _pysecrets.token_hex(8)
-    acc.setdefault(role_key, {})[username] = {
+    entry = {
         "salt": salt, "hash": _hash_pw(pw, salt),
         "created_by": created_by,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
+    if role_key == "students" and professor:
+        entry["professor"] = professor
+    acc.setdefault(role_key, {})[username] = entry
     return gh_write(ACCOUNTS_PATH, acc, f"Add {role_key[:-1]} account: {username}")
 
 
@@ -281,6 +284,10 @@ def delete_account(role_key: str, username: str) -> bool:
     acc = load_accounts()
     if username in acc.get(role_key, {}):
         del acc[role_key][username]
+        if role_key == "professors":
+            # Cascade: remove that professor's students too
+            acc["students"] = {u: i for u, i in acc.get("students", {}).items()
+                               if i.get("professor") != username}
         return gh_write(ACCOUNTS_PATH, acc, f"Delete {role_key[:-1]} account: {username}")
     return False
 
@@ -305,21 +312,43 @@ def current_role() -> str:
     return st.session_state.get("auth", {}).get("role", "student")
 
 
-# ── Shared class portfolio (professor-managed, students view) ─────────────────
+# ── Class portfolios (one per professor; students see their professor's) ─────
+
+def _pf_path(owner: str) -> str:
+    return f"data/portfolios/{owner}.json"
+
+
+def portfolio_owner() -> str | None:
+    """Whose class portfolio the current user works with."""
+    auth = st.session_state.get("auth")
+    if not auth:
+        return None
+    if auth["role"] == "professor":
+        return auth["username"]
+    if auth["role"] == "student":
+        return auth.get("professor")
+    return st.session_state.get("admin_view_owner", auth["username"])  # admin
+
 
 def get_portfolio(valid_tickers: list[str]) -> list[str]:
-    data = gh_read(CLASS_PF_PATH) or {}
+    owner = portfolio_owner()
+    if not owner:
+        return []
+    data = gh_read(_pf_path(owner)) or {}
     valid = set(valid_tickers)
     return [t for t in data.get("tickers", []) if t in valid][:MAX_PORTFOLIO_SIZE]
 
 
 def save_portfolio(tickers: list[str]) -> bool:
-    tickers = list(dict.fromkeys(tickers))[:MAX_PORTFOLIO_SIZE]  # dedupe, cap
+    owner = portfolio_owner()
+    if not owner:
+        return False
+    tickers = list(dict.fromkeys(tickers))[:MAX_PORTFOLIO_SIZE]
     user = st.session_state.get("auth", {}).get("username", "?")
-    return gh_write(CLASS_PF_PATH, {
+    return gh_write(_pf_path(owner), {
         "tickers": tickers, "updated_by": user,
         "updated_at": datetime.now(timezone.utc).isoformat(),
-    }, f"Update class portfolio ({user})")
+    }, f"Update class portfolio of {owner} ({user})")
 
 
 # ── Formatting helpers ─────────────────────────────────────────────────────────
@@ -1202,30 +1231,77 @@ def page_login() -> None:
             "the `[auth]` and `[github]` sections to Streamlit secrets "
             "(app menu → Settings → Secrets)."
         )
-    with st.form("login"):
-        u = st.text_input("Username")
-        pw = st.text_input("Password", type="password")
-        if st.form_submit_button("Sign in", type="primary", use_container_width=True):
-            role = check_login(u.strip(), pw)
-            if role:
-                st.session_state["auth"] = {"username": u.strip(), "role": role}
-                st.rerun()
-            else:
-                st.error("Invalid username or password.")
-    st.caption("Students: ask your professor for your login.")
+
+    tab_in, tab_reg = st.tabs(["🔑 Sign in", "🎓 Register as professor"])
+
+    with tab_in:
+        with st.form("login"):
+            u = st.text_input("Username")
+            pw = st.text_input("Password", type="password")
+            if st.form_submit_button("Sign in", type="primary", use_container_width=True):
+                u = u.strip()
+                role = check_login(u, pw)
+                if role:
+                    auth = {"username": u, "role": role}
+                    if role == "student":
+                        rec = load_accounts().get("students", {}).get(u, {})
+                        auth["professor"] = rec.get("professor")
+                    st.session_state["auth"] = auth
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password.")
+        st.caption("Students: ask your professor for your login.")
+
+    with tab_reg:
+        try:
+            reg_code = st.secrets["auth"].get("professor_code")
+        except Exception:
+            reg_code = None
+        if not reg_code:
+            st.info("Professor self-registration is disabled — ask the site admin for an account.")
+        else:
+            st.markdown("Create your professor account. You'll need the **sign-up code** from the site admin.")
+            with st.form("register"):
+                code = st.text_input("Sign-up code")
+                u = st.text_input("Choose a username")
+                pw = st.text_input("Choose a password", type="password")
+                pw2 = st.text_input("Repeat password", type="password")
+                if st.form_submit_button("Create my professor account", type="primary", use_container_width=True):
+                    u = u.strip()
+                    acc = load_accounts()
+                    taken = set(acc.get("students", {})) | set(acc.get("professors", {}))
+                    if code != reg_code:
+                        st.error("Wrong sign-up code.")
+                    elif not u or not pw:
+                        st.warning("Enter a username and a password.")
+                    elif pw != pw2:
+                        st.warning("Passwords don't match.")
+                    elif u in taken:
+                        st.warning(f"'{u}' is already taken.")
+                    elif add_account("professors", u, pw, "self-registered"):
+                        st.success("Account created! Switch to the Sign in tab to log in.")
 
 
 def _account_manager(role_key: str, role_label: str) -> None:
     """Shared add/delete UI for student or professor accounts."""
     me = st.session_state["auth"]["username"]
+    role = current_role()
     acc = load_accounts()
     users = acc.get(role_key, {})
+    professors = sorted(acc.get("professors", {}))
+
+    # Professors only ever see their own students
+    if role_key == "students" and role == "professor":
+        users = {u: i for u, i in users.items() if i.get("professor") == me}
 
     st.subheader(f"Add a {role_label}")
     with st.form(f"add_{role_key}", clear_on_submit=True):
         c1, c2 = st.columns(2)
         u = c1.text_input("Username")
         pw = c2.text_input("Password", type="password")
+        owner = me
+        if role_key == "students" and role == "admin" and professors:
+            owner = st.selectbox("Assign to professor's class", professors + [me])
         if st.form_submit_button(f"➕ Create {role_label} account", type="primary"):
             u = u.strip()
             taken = set(acc.get("students", {})) | set(acc.get("professors", {}))
@@ -1233,7 +1309,8 @@ def _account_manager(role_key: str, role_label: str) -> None:
                 st.warning("Enter both a username and a password.")
             elif u in taken:
                 st.warning(f"'{u}' already exists.")
-            elif add_account(role_key, u, pw, me):
+            elif add_account(role_key, u, pw, me,
+                             professor=owner if role_key == "students" else None):
                 st.success(f"{role_label.title()} '{u}' created — share the username and password with them.")
                 st.rerun()
 
@@ -1244,7 +1321,8 @@ def _account_manager(role_key: str, role_label: str) -> None:
     for u, info in sorted(users.items()):
         c1, c2, c3 = st.columns([2, 2, 1])
         c1.markdown(f"**{u}**")
-        c2.caption(f"added by {info.get('created_by', '?')} · {str(info.get('created_at', ''))[:10]}")
+        extra = f" · class of {info['professor']}" if info.get("professor") and role == "admin" else ""
+        c2.caption(f"added by {info.get('created_by', '?')} · {str(info.get('created_at', ''))[:10]}{extra}")
         if c3.button("🗑️ Delete", key=f"del_{role_key}_{u}"):
             st.session_state["pending_delete"] = (role_key, u)
             st.rerun()
@@ -1254,7 +1332,10 @@ def _account_manager(role_key: str, role_label: str) -> None:
     if pending and pending[0] == role_key:
         _, name = pending
         st.divider()
-        st.warning(f"⚠️ You are about to permanently delete the {role_label} account **{name}**.")
+        if role_key == "professors":
+            st.warning(f"⚠️ Deleting professor **{name}** also deletes ALL of their student accounts and their class portfolio access. This cannot be undone.")
+        else:
+            st.warning(f"⚠️ You are about to permanently delete the {role_label} account **{name}**.")
         typed = st.text_input(f"Type the username ({name}) to confirm:", key="confirm_del_text")
         c1, c2 = st.columns(2)
         if c1.button("✅ Yes, delete this account", type="primary", use_container_width=True):
@@ -1326,8 +1407,9 @@ but only your professor can add or remove stocks.
     elif role == "professor":
         st.markdown(f"""
 ### Your role
-You manage the **class portfolio** and the **student accounts**. Students see
-exactly the portfolio you build — view-only.
+You manage **your own class portfolio** and **your own student accounts** —
+every professor has a separate class. Your students see exactly the portfolio
+you build — view-only. Other professors can't see or change your class.
 
 ### Building the portfolio
 On **💼 Class Portfolio**, use the picker to choose up to {MAX_PORTFOLIO_SIZE}
@@ -1341,7 +1423,8 @@ off to browse all S&P 500 companies — useful when deciding what to add.
 
 ### Managing students
 On **👥 Manage Students**, create an account by typing a username and password,
-then share those with the student. To delete an account you'll be asked to
+then share those with the student. Students you create belong to your class
+only. To delete an account you'll be asked to
 re-type the username as confirmation — deletions are permanent.
 
 ### The pages
@@ -1355,9 +1438,13 @@ deleting professor accounts on **🎓 Manage Professors** (same typed-confirmati
 rule as student deletions).
 
 ### Typical setup flow
-1. Create a professor account on **🎓 Manage Professors** and send them the login.
-2. The professor builds the class portfolio and creates student logins.
-3. Students sign in and see the portfolio, view-only.
+1. Add `professor_code = "YOUR-CODE"` to the `[auth]` section of Streamlit
+   secrets and share that code with professors — they register themselves on
+   the login page. (You can also create them on **🎓 Manage Professors**.)
+2. Each professor builds their own class portfolio and creates their student logins.
+3. Students sign in and see their professor's portfolio, view-only.
+4. The sidebar "Viewing class of" picker lets you inspect any professor's class.
+5. Deleting a professor also deletes their students (typed confirmation required).
 
 ### How it all works under the hood
 - **Accounts & portfolio** are stored as JSON on the `appdata` branch of your
@@ -1393,6 +1480,16 @@ def main() -> None:
         st.session_state.pop("auth", None)
         st.rerun()
     st.sidebar.markdown("---")
+
+    if role == "admin":
+        profs = sorted(load_accounts().get("professors", {}))
+        if profs:
+            st.sidebar.selectbox(
+                "Viewing class of",
+                [auth["username"]] + profs,
+                key="admin_view_owner",
+                help="Choose which professor's class portfolio to view or edit.",
+            )
 
     pages = {
         "💼 Class Portfolio":  "portfolio",
