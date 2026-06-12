@@ -1265,7 +1265,7 @@ def page_login() -> None:
     <style>
     @media (min-width: 992px) {
       [data-testid="stMainBlockContainer"], section.main > div.block-container {
-        max-width: 40vw; margin-left: auto; margin-right: auto;
+        max-width: 50vw; margin-left: auto; margin-right: auto;
       }
     }
     </style>
