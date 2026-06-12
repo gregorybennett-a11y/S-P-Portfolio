@@ -1,0 +1,38 @@
+name: Auto-update S&P 500 data
+
+on:
+  schedule:
+    # Every 12 hours (06:17 and 18:17 UTC — offset to avoid GitHub's busy on-the-hour queue)
+    - cron: "17 6,18 * * *"
+  workflow_dispatch: {}   # allows manual "Run workflow" button on GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pandas requests
+
+      - name: Check EDGAR for new 10-K filings and update CSV
+        run: python scripts/update_data.py
+
+      - name: Commit and push if data changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/sp500_financials.csv data/update_state.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit."
+          else
+            git commit -m "Auto-update: new 10-K data from SEC EDGAR ($(date -u +%Y-%m-%d))"
+            git push
+          fi

@@ -1,8 +1,9 @@
 """
 S&P 500 Financial Analytics — Streamlit App
 ============================================
-Sector overview · Stock screener · 10-year financial history
-Bear / Base / Bull projections to 2030 · Live prices via yfinance
+My Portfolio (browser-saved) · Sector overview · Stock screener
+10-year financial history · Bear / Base / Bull projections to 2030
+Live prices via yfinance · Data auto-updated via GitHub Actions
 
 Deploy: streamlit run app.py
 """
@@ -76,6 +77,8 @@ SECTOR_COLORS = {
 SCENARIO_MULT = {"Bear": 0.55, "Base": 1.0, "Bull": 1.45}
 SCENARIO_COLOR = {"Bear": "#f85149", "Base": "#e3b341", "Bull": "#3fb950"}
 
+MAX_PORTFOLIO_SIZE = 30  # keeps live-price fetches and memory per user bounded
+
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -104,7 +107,7 @@ div[data-testid="stMetric"] { background: #080c14; border: 1px solid #1c2438;
 """, unsafe_allow_html=True)
 
 # ── Data loading ──────────────────────────────────────────────────────────────
-@st.cache_data(show_spinner="Loading financial data…")
+@st.cache_data(ttl="12h", show_spinner="Loading financial data…")
 def load_data() -> pd.DataFrame:
     """Load the active pipeline CSV. Tries data/ first, then sp500/dist/."""
     candidates = [
@@ -128,12 +131,12 @@ def get_all_tickers(df: pd.DataFrame) -> list[str]:
     return sorted(df["ticker"].unique().tolist())
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, max_entries=100)
 def get_ticker_df(df: pd.DataFrame, ticker: str) -> pd.DataFrame:
     return df[df["ticker"] == ticker].sort_values("year").reset_index(drop=True)
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False, max_entries=600)
 def fetch_live_price(ticker: str) -> dict | None:
     """Fetch live quote via yfinance. Cached 5 min."""
     try:
@@ -155,7 +158,7 @@ def fetch_live_price(ticker: str) -> dict | None:
     return None
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=900, show_spinner=False, max_entries=300)
 def fetch_price_history(ticker: str, period: str = "1y") -> pd.DataFrame | None:
     """Fetch OHLCV history via yfinance."""
     try:
@@ -164,6 +167,32 @@ def fetch_price_history(ticker: str, period: str = "1y") -> pd.DataFrame | None:
         return hist if not hist.empty else None
     except Exception:
         return None
+
+
+# ── Personal portfolio (browser-saved, zero server storage) ──────────────────
+# The portfolio lives in the URL (?pf=AAPL,MSFT,...) and in this browser tab's
+# session. Nothing is written server-side, so any number of users can have
+# their own portfolio without building up storage or write conflicts.
+# Bookmarking the page preserves it across visits.
+
+def get_portfolio(valid_tickers: list[str]) -> list[str]:
+    """Load the portfolio from session state, falling back to the URL."""
+    if "portfolio" not in st.session_state:
+        raw = st.query_params.get("pf", "")
+        tickers = [t.strip().upper() for t in raw.split(",") if t.strip()]
+        valid = set(valid_tickers)
+        st.session_state.portfolio = [t for t in tickers if t in valid][:MAX_PORTFOLIO_SIZE]
+    return st.session_state.portfolio
+
+
+def save_portfolio(tickers: list[str]) -> None:
+    """Persist to session state + URL so a bookmark restores it."""
+    tickers = list(dict.fromkeys(tickers))[:MAX_PORTFOLIO_SIZE]  # dedupe, cap
+    st.session_state.portfolio = tickers
+    if tickers:
+        st.query_params["pf"] = ",".join(tickers)
+    else:
+        st.query_params.pop("pf", None)
 
 
 # ── Formatting helpers ─────────────────────────────────────────────────────────
@@ -562,7 +591,7 @@ def page_stock_detail(df: pd.DataFrame) -> None:
         st.warning(f"No data found for {ticker}.")
         return
 
-    sector = tdf["sector"].iloc[0] if "sector" in tdf.columns else SP500_SECTOR.get(ticker, "Other")
+    sector = tdf["sector"].iloc[0] if "sector" in tdf.columns else "Other"
     color = SECTOR_COLORS.get(sector, "#3d7fe6")
 
     # ── Header ──
@@ -577,6 +606,15 @@ def page_stock_detail(df: pd.DataFrame) -> None:
           <div style="font-size:0.8rem;color:#8b949e;margin-top:0.15rem">{sector}</div>
         </div>
         """, unsafe_allow_html=True)
+        portfolio = get_portfolio(all_tickers)
+        if ticker in portfolio:
+            if st.button(f"✓ In portfolio — remove {ticker}", key="pf_remove"):
+                save_portfolio([t for t in portfolio if t != ticker])
+                st.rerun()
+        elif len(portfolio) < MAX_PORTFOLIO_SIZE:
+            if st.button(f"➕ Add {ticker} to My Portfolio", key="pf_add"):
+                save_portfolio(portfolio + [ticker])
+                st.rerun()
     with col_price:
         with st.spinner("Fetching price…"):
             px_data = fetch_live_price(ticker)
@@ -771,6 +809,160 @@ def page_stock_detail(df: pd.DataFrame) -> None:
         st.dataframe(show_df, hide_index=True, use_container_width=True)
 
 
+def _portfolio_builder(df: pd.DataFrame, existing: list[str]) -> None:
+    """Shared builder/editor UI: sector filter + multiselect + save."""
+    sectors = ["All Sectors"] + sorted(df["sector"].unique())
+    sel_sector = st.selectbox("Filter by sector", sectors, key="pf_sector_filter")
+
+    latest_year = int(df[df["revenue_m"].notna()]["year"].max())
+    latest = df[df["year"] == latest_year]
+    if sel_sector != "All Sectors":
+        choices = sorted(latest[latest["sector"] == sel_sector]["ticker"].unique())
+    else:
+        choices = sorted(latest["ticker"].unique())
+    # Keep already-picked tickers selectable even when filtered out
+    options = sorted(set(choices) | set(existing))
+
+    picked = st.multiselect(
+        f"Choose your stocks (max {MAX_PORTFOLIO_SIZE})",
+        options,
+        default=[t for t in existing if t in options],
+        max_selections=MAX_PORTFOLIO_SIZE,
+        placeholder="Type a ticker, e.g. AAPL",
+        key="pf_picker",
+    )
+
+    c1, c2 = st.columns([1, 1])
+    if c1.button("💾 Save Portfolio", type="primary", use_container_width=True):
+        save_portfolio(picked)
+        st.rerun()
+    if existing and c2.button("🗑️ Clear Portfolio", use_container_width=True):
+        save_portfolio([])
+        st.rerun()
+
+
+def page_portfolio(df: pd.DataFrame) -> None:
+    """Personal portfolio: first-visit builder, then a live dashboard."""
+    all_tickers = get_all_tickers(df)
+    portfolio = get_portfolio(all_tickers)
+
+    # ── First visit: onboarding builder ──
+    if not portfolio:
+        st.title("💼 Build Your Portfolio")
+        st.markdown(
+            "Welcome! Pick the S&P 500 stocks you want to follow and create your "
+            "own personalized portfolio. It's saved **in your browser's URL** — "
+            "no account needed. After saving, **bookmark the page** to keep it."
+        )
+        _portfolio_builder(df, [])
+        return
+
+    # ── Returning user: dashboard ──
+    st.title("💼 My Portfolio")
+    st.caption(
+        f"{len(portfolio)} holdings · saved in your URL — bookmark this page to keep it"
+    )
+
+    latest_year = int(df[df["revenue_m"].notna()]["year"].max())
+    pf_latest = df[(df["ticker"].isin(portfolio)) & (df["year"] == latest_year)]
+
+    # Live prices (cached 5 min per ticker)
+    quotes = {}
+    with st.spinner("Fetching live prices…"):
+        for t in portfolio:
+            quotes[t] = fetch_live_price(t)
+
+    # Summary metrics
+    n_up = sum(1 for q in quotes.values() if q and q["change_pct"] >= 0)
+    n_dn = sum(1 for q in quotes.values() if q and q["change_pct"] < 0)
+    total_rev = pf_latest["revenue_m"].sum()
+    total_ni = pf_latest["net_income_m"].sum()
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Holdings", f"{len(portfolio)}")
+    c2.metric("Up / Down Today", f"🟢 {n_up} / 🔴 {n_dn}")
+    c3.metric(f"Combined Revenue ({latest_year})", fmt_m(total_rev))
+    c4.metric(f"Combined Net Income ({latest_year})", fmt_m(total_ni))
+
+    st.divider()
+
+    tbl_col, pie_col = st.columns([3, 2])
+
+    with tbl_col:
+        st.markdown("**Holdings**")
+        rows = []
+        for t in portfolio:
+            r = pf_latest[pf_latest["ticker"] == t]
+            r = r.iloc[0] if len(r) else None
+            q = quotes.get(t)
+            rows.append({
+                "Ticker": t,
+                "Sector": r["sector"] if r is not None else "—",
+                "Price": q["price"] if q else None,
+                "Today %": q["change_pct"] if q else None,
+                "Revenue ($M)": r["revenue_m"] if r is not None else None,
+                "Net Income ($M)": r["net_income_m"] if r is not None else None,
+                "EPS": r["eps_diluted"] if r is not None else None,
+                "P/E": r["pe_ratio"] if r is not None else None,
+            })
+        st.dataframe(
+            pd.DataFrame(rows),
+            hide_index=True,
+            use_container_width=True,
+            height=min(420, 38 + 35 * len(rows)),
+            column_config={
+                "Price": st.column_config.NumberColumn(format="$%.2f"),
+                "Today %": st.column_config.NumberColumn(format="%.2f%%"),
+                "Revenue ($M)": st.column_config.NumberColumn(format="$%.0f M"),
+                "Net Income ($M)": st.column_config.NumberColumn(format="$%.0f M"),
+                "EPS": st.column_config.NumberColumn(format="$%.2f"),
+                "P/E": st.column_config.NumberColumn(format="%.1f×"),
+            },
+        )
+        st.caption("Open any holding in **📊 Stock Detail** for 10-yr history & projections.")
+
+    with pie_col:
+        st.markdown("**Sector Mix**")
+        if len(pf_latest):
+            mix = pf_latest.groupby("sector")["ticker"].count().reset_index()
+            mix.columns = ["sector", "count"]
+            fig = px.pie(
+                mix, names="sector", values="count",
+                color="sector", color_discrete_map=SECTOR_COLORS, hole=0.45,
+            )
+            fig.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#8b949e", size=10),
+                height=300, margin=dict(l=10, r=10, t=10, b=10),
+                legend=dict(font=dict(size=9)),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    # Combined revenue history of the portfolio
+    st.markdown("**Portfolio Combined Revenue (10-Year)**")
+    pf_hist = (
+        df[df["ticker"].isin(portfolio) & df["year"].isin(HIST_YEARS)]
+        .groupby("year")["revenue_m"].sum().reset_index()
+    )
+    if len(pf_hist):
+        fig = go.Figure(go.Scatter(
+            x=pf_hist["year"].astype(str), y=pf_hist["revenue_m"],
+            line=dict(color="#3d7fe6", width=2.5), fill="tozeroy",
+            fillcolor=rgba("#3d7fe6", 0.09), mode="lines+markers", marker=dict(size=4),
+            hovertemplate="%{x}: $%{y:,.0f}M<extra></extra>",
+        ))
+        fig.update_layout(
+            height=260, margin=dict(l=10, r=10, t=10, b=30),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#080c14",
+            font=dict(color="#8b949e", size=10),
+            xaxis=dict(gridcolor="#1c2438", showgrid=False),
+            yaxis=dict(gridcolor="#1c2438", tickprefix="$", ticksuffix="M"),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+    with st.expander("✏️ Edit Portfolio", expanded=False):
+        _portfolio_builder(df, portfolio)
+
+
 def page_risk_analysis(df: pd.DataFrame) -> None:
     """Cross-sector risk and performance comparison."""
     st.title("⚠️ Risk & Comparative Analysis")
@@ -874,6 +1066,7 @@ def main() -> None:
     st.sidebar.markdown("---")
 
     pages = {
+        "💼 My Portfolio":     "portfolio",
         "🏠 Overview":         "overview",
         "🔍 Stock Screener":   "screener",
         "📊 Stock Detail":     "stock",
@@ -887,7 +1080,9 @@ def main() -> None:
     st.sidebar.caption("Prices via Yahoo Finance (yfinance)")
     st.sidebar.caption("Fundamentals: SEC EDGAR 10-K pipeline")
 
-    if page == "overview":
+    if page == "portfolio":
+        page_portfolio(df)
+    elif page == "overview":
         page_overview(df)
     elif page == "screener":
         page_screener(df)
