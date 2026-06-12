@@ -13,5 +13,13 @@
       "created_at": "2026-06-12T19:50:36.168295+00:00"
     }
   },
-  "students": {}
+  "students": {
+    "bob": {
+      "salt": "f98889447e59573a",
+      "hash": "4d53d7dd40f49607edd2ab2ba94603b79b9da22217f5833d85e9be7fec23a287",
+      "created_by": "dadrobble",
+      "created_at": "2026-06-12T19:55:21.384441+00:00",
+      "professor": "dadrobble"
+    }
+  }
 }
