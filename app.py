@@ -1075,21 +1075,40 @@ def main() -> None:
     page_label = st.sidebar.radio("Navigate", list(pages.keys()), label_visibility="collapsed")
     page = pages[page_label]
 
+    # ── Portfolio-wide filter ─────────────────────────────────────────────────
+    # When the user has a portfolio, every page can be filtered to just their
+    # holdings. Toggle off to explore all companies (and add new ones).
+    portfolio = get_portfolio(get_all_tickers(df))
+    df_view = df
+    if portfolio:
+        st.sidebar.markdown("---")
+        pf_only = st.sidebar.toggle(
+            "💼 My portfolio only",
+            value=True,
+            key="pf_only_toggle",
+            help="Filter every page to just your holdings. Turn off to explore all companies and add new ones.",
+        )
+        if pf_only:
+            df_view = df[df["ticker"].isin(portfolio)]
+            st.sidebar.caption(f"Filtered to your {len(portfolio)} holdings")
+        else:
+            st.sidebar.caption(f"Exploring all {df['ticker'].nunique()} companies")
+
     st.sidebar.markdown("---")
     st.sidebar.caption(f"Data: {df['ticker'].nunique()} tickers  {int(df['year'].max())} latest year")
     st.sidebar.caption("Prices via Yahoo Finance (yfinance)")
     st.sidebar.caption("Fundamentals: SEC EDGAR 10-K pipeline")
 
     if page == "portfolio":
-        page_portfolio(df)
+        page_portfolio(df)          # builder always needs the full universe
     elif page == "overview":
-        page_overview(df)
+        page_overview(df_view)
     elif page == "screener":
-        page_screener(df)
+        page_screener(df_view)
     elif page == "stock":
-        page_stock_detail(df)
+        page_stock_detail(df_view)
     elif page == "risk":
-        page_risk_analysis(df)
+        page_risk_analysis(df_view)
 
 
 if __name__ == "__main__":
