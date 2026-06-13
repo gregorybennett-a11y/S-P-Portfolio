@@ -17,13 +17,44 @@ import yfinance as yf
 from pathlib import Path
 import json
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="S&P 500 Analytics",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+# ── Page config + global CSS ──────────────────────────────────────────────────
+# Called from main() so it runs on EVERY rerun — including in demo_app.py,
+# where app.py is imported once and its top-level code doesn't re-execute.
+def setup_page() -> None:
+    try:
+        st.set_page_config(
+            page_title="S&P 500 Analytics",
+            page_icon="📈",
+            layout="wide",
+            initial_sidebar_state="expanded",
+        )
+    except Exception:
+        pass  # already configured this run
+    st.markdown("""
+<style>
+/* Tighten sidebar */
+[data-testid="stSidebar"] { min-width: 220px; }
+/* Metric cards */
+.metric-card {
+    background: #0d1220; border: 1px solid #1c2438;
+    border-radius: 6px; padding: 0.85rem 1rem; margin-bottom: 0.5rem;
+}
+.metric-card .mc-label { font-size: 0.68rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em; color: #4a5568; margin-bottom: 0.25rem; }
+.metric-card .mc-val { font-size: 1.3rem; font-weight: 700; color: #e6edf3; }
+.metric-card .mc-sub { font-size: 0.72rem; color: #8b949e; margin-top: 0.1rem; }
+/* Year context */
+.year-card { background: #080c14; border: 1px solid #1c2438; border-radius: 6px;
+    padding: 0.8rem 0.95rem; margin-bottom: 0.5rem; border-left: 3px solid #3d7fe6; }
+.year-card .yc-year { font-size: 1rem; font-weight: 700; color: #e6edf3; }
+.year-card .yc-text { font-size: 0.85rem; color: #99a3ad; margin-top: 0.25rem; line-height: 1.5; }
+/* Sector badge */
+.sector-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px;
+    font-size: 0.7rem; font-weight: 600; }
+div[data-testid="stMetric"] { background: #080c14; border: 1px solid #1c2438;
+    border-radius: 6px; padding: 0.75rem 1rem; }
+</style>
+""", unsafe_allow_html=True)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 HIST_YEARS = list(range(2015, 2026))
@@ -86,33 +117,6 @@ DEMO_PORTFOLIO = [
     "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "BRK-B", "JPM",
     "V", "JNJ", "XOM", "WMT", "PG", "KO", "DIS", "NFLX", "AMD", "CRM", "COST",
 ]
-
-# ── CSS ───────────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-/* Tighten sidebar */
-[data-testid="stSidebar"] { min-width: 220px; }
-/* Metric cards */
-.metric-card {
-    background: #0d1220; border: 1px solid #1c2438;
-    border-radius: 6px; padding: 0.85rem 1rem; margin-bottom: 0.5rem;
-}
-.metric-card .mc-label { font-size: 0.68rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .06em; color: #4a5568; margin-bottom: 0.25rem; }
-.metric-card .mc-val { font-size: 1.3rem; font-weight: 700; color: #e6edf3; }
-.metric-card .mc-sub { font-size: 0.72rem; color: #8b949e; margin-top: 0.1rem; }
-/* Year context */
-.year-card { background: #080c14; border: 1px solid #1c2438; border-radius: 6px;
-    padding: 0.8rem 0.95rem; margin-bottom: 0.5rem; border-left: 3px solid #3d7fe6; }
-.year-card .yc-year { font-size: 1rem; font-weight: 700; color: #e6edf3; }
-.year-card .yc-text { font-size: 0.85rem; color: #99a3ad; margin-top: 0.25rem; line-height: 1.5; }
-/* Sector badge */
-.sector-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px;
-    font-size: 0.7rem; font-weight: 600; }
-div[data-testid="stMetric"] { background: #080c14; border: 1px solid #1c2438;
-    border-radius: 6px; padding: 0.75rem 1rem; }
-</style>
-""", unsafe_allow_html=True)
 
 # ── Data loading ──────────────────────────────────────────────────────────────
 @st.cache_data(ttl="12h", show_spinner="Loading financial data…")
@@ -1558,6 +1562,7 @@ rule as student deletions).
 
 # ── Sidebar navigation ────────────────────────────────────────────────────────
 def main() -> None:
+    setup_page()
     df = load_data()
     if df.empty:
         return
