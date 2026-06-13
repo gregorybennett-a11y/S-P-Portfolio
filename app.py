@@ -183,7 +183,7 @@ def fetch_live_prices_bulk(tickers: tuple) -> dict:
     if not tickers:
         return {}
     try:
-        data = yf.download(list(tickers), period="5d", interval="1d",
+        data = yf.download(list(tickers), period="2d", interval="1d",
                            group_by="ticker", progress=False, threads=True)
         out = {}
         for t in tickers:
@@ -1064,19 +1064,19 @@ def page_portfolio(df: pd.DataFrame) -> None:
     # ── No portfolio yet ──
     if not portfolio:
         if can_edit:
-            st.title("💼 Build the Class Portfolio")
+            st.title("💼 Build Your Portfolio" if DEMO_MODE else "💼 Build the Class Portfolio")
             st.markdown(
                 "Pick the S&P 500 stocks for your class — as many as you like. "
                 "Students will see exactly this portfolio when they log in."
             )
             _portfolio_builder(df, [])
         else:
-            st.title("💼 Class Portfolio")
+            st.title("💼 Portfolio" if DEMO_MODE else "💼 Class Portfolio")
             st.info("Your professor hasn't added stocks yet — check back soon!")
         return
 
     # ── Dashboard ──
-    st.title("💼 Class Portfolio")
+    st.title("💼 Portfolio" if DEMO_MODE else "💼 Class Portfolio")
     if DEMO_MODE:
         st.caption(f"{len(portfolio)} holdings · demo portfolio — add or remove stocks freely, nothing is saved")
     else:
@@ -1090,6 +1090,8 @@ def page_portfolio(df: pd.DataFrame) -> None:
     # Live prices — one batched request for the whole portfolio (cached 5 min)
     with st.spinner("Fetching live prices…"):
         quotes = fetch_live_prices_bulk(tuple(portfolio))
+        if not quotes:  # bulk endpoint throttled — fall back to per-ticker quotes
+            quotes = {t: fetch_live_price(t) for t in portfolio[:50]}
 
     # Summary metrics
     n_up = sum(1 for q in quotes.values() if q and q["change_pct"] >= 0)
@@ -1448,7 +1450,7 @@ def page_howto(role: str) -> None:
 ### Welcome to the public demo
 This is a fully working copy of a classroom app where professors build a stock
 portfolio and their students study it. Here, **you** play the professor: edit
-the portfolio on **💼 Class Portfolio** (or from any stock's detail page), and
+the portfolio on **💼 Portfolio** (or from any stock's detail page), and
 every other page filters to your picks. Changes last for your browser session
 only — refresh and it resets.
 
@@ -1601,7 +1603,7 @@ def main() -> None:
             )
 
     pages = {
-        "💼 Class Portfolio":  "portfolio",
+        ("💼 Portfolio" if DEMO_MODE else "💼 Class Portfolio"):  "portfolio",
         "🏠 Overview":         "overview",
         "🔍 Stock Screener":   "screener",
         "📊 Stock Detail":     "stock",
