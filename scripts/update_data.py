@@ -214,4 +214,5 @@ def main(limit: int | None = None) -> int:
 
 
 if __name__ == "__main__":
-    lim = int(sys.argv[1]) if len(sys.argv) > 1 else Non
+    lim = int(sys.argv[1]) if len(sys.argv) > 1 else None
+    main(lim)
