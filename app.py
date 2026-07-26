@@ -49,13 +49,19 @@ def setup_page() -> None:
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
 html, body, [class*="st-"], .stApp { font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif; }
+/* Restore Streamlit's Material icon font (expander arrows, sidebar collapse, etc.) */
+[data-testid="stIconMaterial"], [class*="material-symbols"], .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded' !important;
+    font-weight: normal; font-style: normal; letter-spacing: normal;
+    text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr;
+}
 .stApp {
     background:
       radial-gradient(1100px 520px at 12% -8%, rgba(99,102,241,.15), transparent 60%),
       radial-gradient(900px 480px at 88% -4%, rgba(34,211,238,.09), transparent 55%),
       #05070d;
 }
-[data-testid="stHeader"] { background: transparent; }
+[data-testid="stHeader"] { background: rgba(5,7,13,.72); backdrop-filter: blur(10px); }
 h1, h2, h3 { letter-spacing: -.02em; color: #f1f5f9; }
 
 /* Sidebar */
