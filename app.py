@@ -17,6 +17,20 @@ import yfinance as yf
 from pathlib import Path
 import json
 
+# ── Global Plotly theme ───────────────────────────────────────────────────────
+import plotly.io as pio
+pio.templates["sp_dark"] = go.layout.Template(layout=go.Layout(
+    font=dict(family="Inter, -apple-system, sans-serif", size=12, color="#c7d2e0"),
+    hoverlabel=dict(bgcolor="#111a30", bordercolor="rgba(99,102,241,.45)",
+                    font=dict(family="Inter, sans-serif", size=12, color="#e2e8f0")),
+    xaxis=dict(gridcolor="rgba(148,163,184,.08)", zerolinecolor="rgba(148,163,184,.08)"),
+    yaxis=dict(gridcolor="rgba(148,163,184,.08)", zerolinecolor="rgba(148,163,184,.08)"),
+    legend=dict(bgcolor="rgba(0,0,0,0)"),
+    colorway=["#818cf8", "#22d3ee", "#34d399", "#fbbf24", "#fb7185",
+              "#a78bfa", "#f472b6", "#38bdf8"],
+))
+pio.templates.default = "plotly_dark+sp_dark"
+
 # ── Page config + global CSS ──────────────────────────────────────────────────
 # Called from main() so it runs on EVERY rerun — including in demo_app.py,
 # where app.py is imported once and its top-level code doesn't re-execute.
@@ -32,27 +46,81 @@ def setup_page() -> None:
         pass  # already configured this run
     st.markdown("""
 <style>
-/* Tighten sidebar */
-[data-testid="stSidebar"] { min-width: 220px; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
+html, body, [class*="st-"], .stApp { font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif; }
+.stApp {
+    background:
+      radial-gradient(1100px 520px at 12% -8%, rgba(99,102,241,.15), transparent 60%),
+      radial-gradient(900px 480px at 88% -4%, rgba(34,211,238,.09), transparent 55%),
+      #05070d;
+}
+[data-testid="stHeader"] { background: transparent; }
+h1, h2, h3 { letter-spacing: -.02em; color: #f1f5f9; }
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    min-width: 230px;
+    background: rgba(7,11,22,.88);
+    border-right: 1px solid rgba(148,163,184,.1);
+    backdrop-filter: blur(12px);
+}
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    padding: .32rem .6rem; border-radius: 10px;
+    transition: background .15s ease;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover { background: rgba(99,102,241,.12); }
+
+/* Buttons */
+.stButton > button {
+    border-radius: 10px; border: 1px solid rgba(99,102,241,.35);
+    background: linear-gradient(135deg, rgba(99,102,241,.18), rgba(34,211,238,.08));
+    color: #e2e8f0; font-weight: 600;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.stButton > button:hover { border-color: #6366f1; box-shadow: 0 0 14px rgba(99,102,241,.30); }
+
 /* Metric cards */
 .metric-card {
-    background: #0d1220; border: 1px solid #1c2438;
-    border-radius: 6px; padding: 0.85rem 1rem; margin-bottom: 0.5rem;
+    background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.14);
+    border-radius: 14px; padding: 0.9rem 1.05rem; margin-bottom: 0.55rem;
+    backdrop-filter: blur(10px);
+    transition: transform .15s ease, border-color .15s ease;
 }
-.metric-card .mc-label { font-size: 0.68rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .06em; color: #4a5568; margin-bottom: 0.25rem; }
-.metric-card .mc-val { font-size: 1.3rem; font-weight: 700; color: #e6edf3; }
-.metric-card .mc-sub { font-size: 0.72rem; color: #8b949e; margin-top: 0.1rem; }
+.metric-card:hover { transform: translateY(-1px); border-color: rgba(99,102,241,.4); }
+.metric-card .mc-label { font-size: 0.66rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .1em; color: #8494ab; margin-bottom: 0.3rem; }
+.metric-card .mc-val { font-family: 'JetBrains Mono', monospace;
+    font-size: 1.32rem; font-weight: 700; color: #f1f5f9; }
+.metric-card .mc-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 0.12rem; }
+
 /* Year context */
-.year-card { background: #080c14; border: 1px solid #1c2438; border-radius: 6px;
-    padding: 0.8rem 0.95rem; margin-bottom: 0.5rem; border-left: 3px solid #3d7fe6; }
-.year-card .yc-year { font-size: 1rem; font-weight: 700; color: #e6edf3; }
-.year-card .yc-text { font-size: 0.85rem; color: #99a3ad; margin-top: 0.25rem; line-height: 1.5; }
+.year-card { background: rgba(10,16,31,.6); border: 1px solid rgba(148,163,184,.13);
+    border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.55rem;
+    border-left: 3px solid #6366f1; backdrop-filter: blur(8px); }
+.year-card .yc-year { font-size: 1rem; font-weight: 700; color: #f1f5f9; }
+.year-card .yc-text { font-size: 0.85rem; color: #9aa8bd; margin-top: 0.25rem; line-height: 1.55; }
+
 /* Sector badge */
-.sector-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px;
+.sector-badge { display: inline-block; padding: 0.16rem 0.55rem; border-radius: 999px;
     font-size: 0.7rem; font-weight: 600; }
-div[data-testid="stMetric"] { background: #080c14; border: 1px solid #1c2438;
-    border-radius: 6px; padding: 0.75rem 1rem; }
+
+/* Streamlit widgets */
+div[data-testid="stMetric"] { background: rgba(15,23,42,.5); border: 1px solid rgba(148,163,184,.13);
+    border-radius: 14px; padding: 0.8rem 1rem; backdrop-filter: blur(10px); }
+div[data-testid="stMetric"] label { color: #8494ab !important; }
+div[data-testid="stMetricValue"] { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+[data-testid="stDataFrame"] { border: 1px solid rgba(148,163,184,.13); border-radius: 12px; }
+div[data-baseweb="select"] > div, .stTextInput input, .stNumberInput input {
+    background: rgba(15,23,42,.7) !important;
+    border-color: rgba(99,102,241,.25) !important;
+    border-radius: 10px !important;
+}
+div[data-testid="stExpander"] { background: rgba(15,23,42,.45);
+    border: 1px solid rgba(148,163,184,.13); border-radius: 14px; overflow: hidden; }
+div[data-testid="stAlert"] { border-radius: 12px; backdrop-filter: blur(8px); }
+.stTabs [data-baseweb="tab-list"] { gap: .4rem; }
+hr { border-color: rgba(148,163,184,.12) !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -576,11 +644,11 @@ def make_metric_chart(
         height=400,
         margin=dict(l=10, r=10, t=42, b=34),
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="#080c14",
+        plot_bgcolor="rgba(13,20,38,0.45)",
         font=dict(color="#8b949e", size=12),
         legend=dict(orientation="h", y=-0.18, font=dict(size=11)),
-        xaxis=dict(gridcolor="#1c2438", tickfont=dict(size=12), showgrid=False),
-        yaxis=dict(gridcolor="#1c2438", tickfont=dict(size=12)),
+        xaxis=dict(gridcolor="#26314e", tickfont=dict(size=12), showgrid=False),
+        yaxis=dict(gridcolor="#26314e", tickfont=dict(size=12)),
         hovermode="x unified",
     )
     return fig
@@ -599,10 +667,10 @@ def make_price_chart(hist_df: pd.DataFrame, ticker: str, color: str) -> go.Figur
         height=360,
         margin=dict(l=10, r=10, t=30, b=10),
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="#080c14",
+        plot_bgcolor="rgba(13,20,38,0.45)",
         font=dict(color="#8b949e", size=12),
-        xaxis=dict(gridcolor="#1c2438", showgrid=False),
-        yaxis=dict(gridcolor="#1c2438", tickprefix="$"),
+        xaxis=dict(gridcolor="#26314e", showgrid=False),
+        yaxis=dict(gridcolor="#26314e", tickprefix="$"),
         showlegend=False,
     )
     return fig
@@ -662,11 +730,11 @@ def make_projection_summary_chart(
         height=340,
         margin=dict(l=10, r=10, t=35, b=30),
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="#080c14",
+        plot_bgcolor="rgba(13,20,38,0.45)",
         font=dict(color="#8b949e", size=10),
         legend=dict(orientation="h", y=-0.25, font=dict(size=9)),
-        xaxis=dict(gridcolor="#1c2438", showgrid=False),
-        yaxis=dict(gridcolor="#1c2438"),
+        xaxis=dict(gridcolor="#26314e", showgrid=False),
+        yaxis=dict(gridcolor="#26314e"),
     )
     return fig
 
@@ -705,7 +773,7 @@ def page_overview(df: pd.DataFrame) -> None:
         ni_sum  = sec_latest["net_income_m"].sum()
         with cols[idx % 3]:
             st.markdown(f"""
-            <div style="background:#080c14;border:1px solid #1c2438;border-left:4px solid {color};
+            <div style="background:#0a101f;border:1px solid #26314e;border-left:4px solid {color};
                         border-radius:8px;padding:1.1rem 1.25rem;margin-bottom:0.75rem">
               <div style="font-size:1.1rem;font-weight:700;color:#e6edf3">{sector}</div>
               <div style="font-size:0.92rem;color:#aeb7c2;margin-top:0.3rem">
@@ -905,10 +973,10 @@ def page_stock_detail(df: pd.DataFrame) -> None:
         rev_val = fmt_m(yr_row["revenue_m"].values[0]) if has_data else "—"
         ni_val  = fmt_m(yr_row["net_income_m"].values[0]) if has_data else "—"
         with yr_cols[i]:
-            bg = rgba(color, 0.08) if has_data else "#080c14"
+            bg = rgba(color, 0.08) if has_data else "#0a101f"
             st.markdown(f"""
-            <div style="background:{bg};border:1px solid #1c2438;border-radius:4px;
-                        padding:0.4rem 0.35rem;text-align:center;border-top:2px solid {color if has_data else '#1c2438'}">
+            <div style="background:{bg};border:1px solid #26314e;border-radius:4px;
+                        padding:0.4rem 0.35rem;text-align:center;border-top:2px solid {color if has_data else '#26314e'}">
               <div style="font-size:0.72rem;font-weight:700;color:#e6edf3">{yr}</div>
               <div style="font-size:0.62rem;color:#8b949e;margin-top:0.15rem">R:{rev_val}</div>
               <div style="font-size:0.62rem;color:#8b949e">NI:{ni_val}</div>
@@ -1176,10 +1244,10 @@ def page_portfolio(df: pd.DataFrame) -> None:
         ))
         fig.update_layout(
             height=260, margin=dict(l=10, r=10, t=10, b=30),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#080c14",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(13,20,38,0.45)",
             font=dict(color="#8b949e", size=10),
-            xaxis=dict(gridcolor="#1c2438", showgrid=False),
-            yaxis=dict(gridcolor="#1c2438", tickprefix="$", ticksuffix="M"),
+            xaxis=dict(gridcolor="#26314e", showgrid=False),
+            yaxis=dict(gridcolor="#26314e", tickprefix="$", ticksuffix="M"),
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -1207,7 +1275,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
             labels={"revenue_m": "Revenue ($M)", "sector": ""},
         )
         fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#080c14",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(13,20,38,0.45)",
             font=dict(color="#8b949e"), showlegend=False,
             height=400, margin=dict(l=10, r=10, t=40, b=10),
             xaxis=dict(tickangle=-30),
@@ -1233,7 +1301,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
                 title=f"Revenue CAGR {2020}→{latest_year} by Sector",
             )
             fig2.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#080c14",
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(13,20,38,0.45)",
                 font=dict(color="#8b949e"), showlegend=False,
                 height=350, margin=dict(l=10, r=10, t=40, b=10),
                 xaxis=dict(tickangle=-30),
@@ -1249,7 +1317,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
             labels={"gross_margin_pct": "Gross Margin %", "sector": ""},
         )
         fig3.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#080c14",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(13,20,38,0.45)",
             font=dict(color="#8b949e"), showlegend=False,
             height=400, margin=dict(l=10, r=10, t=40, b=10),
             xaxis=dict(tickangle=-30),
@@ -1275,7 +1343,7 @@ def page_risk_analysis(df: pd.DataFrame) -> None:
             labels={"debt_equity": "Debt / Equity", "roe_pct": "ROE %"},
         )
         fig4.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#080c14",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(13,20,38,0.45)",
             font=dict(color="#8b949e"),
             height=450, margin=dict(l=10, r=10, t=40, b=10),
         )
