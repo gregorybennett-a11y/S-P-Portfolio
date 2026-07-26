@@ -749,7 +749,7 @@ def make_projection_summary_chart(
 
 def page_overview(df: pd.DataFrame) -> None:
     """Sector-level overview with summary stats."""
-    st.title("📈 S&P 500 Financial Analytics")
+    st.title("S&P 500 Financial Analytics")
     st.caption("10-year historical financials · Bear / Base / Bull projections to 2030 · Live prices via Yahoo Finance")
 
     # Top-level stats
@@ -808,7 +808,7 @@ def page_overview(df: pd.DataFrame) -> None:
 
 def page_screener(df: pd.DataFrame) -> None:
     """Stock screener with filters."""
-    st.title("🔍 Stock Screener")
+    st.title("Stock Screener")
 
     latest = latest_per_ticker(df).copy()
 
@@ -902,11 +902,11 @@ def page_stock_detail(df: pd.DataFrame) -> None:
         if current_role() in ("professor", "admin"):
             portfolio = get_portfolio(all_tickers)
             if ticker in portfolio:
-                if st.button(f"✓ In class portfolio — remove {ticker}", key="pf_remove"):
+                if st.button(f"In class portfolio — remove {ticker}", key="pf_remove"):
                     save_portfolio([t for t in portfolio if t != ticker])
                     st.rerun()
             elif len(portfolio) < MAX_PORTFOLIO_SIZE:
-                if st.button(f"➕ Add {ticker} to Class Portfolio", key="pf_add"):
+                if st.button(f"Add {ticker} to Class Portfolio", key="pf_add"):
                     save_portfolio(portfolio + [ticker])
                     st.rerun()
     with col_price:
@@ -993,7 +993,7 @@ def page_stock_detail(df: pd.DataFrame) -> None:
 
     # ── Financial metric charts ──
     st.markdown(f"**Financial Metrics 2015–{latest_year} + Projections 2026–2030**")
-    st.caption("🔴 Bear (0.55× CAGR) · 🟡 Base (1.0× CAGR) · 🟢 Bull (1.45× CAGR)")
+    st.caption("Bear (0.55× CAGR) · Base (1.0× CAGR) · Bull (1.45× CAGR)")
 
     available_metrics = [(col, lbl) for col, lbl in METRICS if col in tdf.columns and tdf[col].notna().any()]
 
@@ -1125,10 +1125,10 @@ def _portfolio_builder(df: pd.DataFrame, existing: list[str]) -> None:
     )
 
     c1, c2 = st.columns([1, 1])
-    if c1.button("💾 Save Portfolio", type="primary", use_container_width=True):
+    if c1.button("Save Portfolio", type="primary", use_container_width=True):
         save_portfolio(picked)
         st.rerun()
-    if existing and c2.button("🗑️ Clear Portfolio", use_container_width=True):
+    if existing and c2.button("Clear Portfolio", use_container_width=True):
         save_portfolio([])
         st.rerun()
 
@@ -1142,19 +1142,19 @@ def page_portfolio(df: pd.DataFrame) -> None:
     # ── No portfolio yet ──
     if not portfolio:
         if can_edit:
-            st.title("💼 Build Your Portfolio" if DEMO_MODE else "💼 Build the Class Portfolio")
+            st.title("Build Your Portfolio" if DEMO_MODE else "Build the Class Portfolio")
             st.markdown(
                 "Pick the S&P 500 stocks for your class — as many as you like. "
                 "Students will see exactly this portfolio when they log in."
             )
             _portfolio_builder(df, [])
         else:
-            st.title("💼 Portfolio" if DEMO_MODE else "💼 Class Portfolio")
+            st.title("Portfolio" if DEMO_MODE else "Class Portfolio")
             st.info("Your professor hasn't added stocks yet — check back soon!")
         return
 
     # ── Dashboard ──
-    st.title("💼 Portfolio" if DEMO_MODE else "💼 Class Portfolio")
+    st.title("Portfolio" if DEMO_MODE else "Class Portfolio")
     if DEMO_MODE:
         st.caption(f"{len(portfolio)} holdings · demo portfolio — add or remove stocks freely, nothing is saved")
     else:
@@ -1178,7 +1178,7 @@ def page_portfolio(df: pd.DataFrame) -> None:
     total_ni = pf_latest["net_income_m"].sum()
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Holdings", f"{len(portfolio)}")
-    c2.metric("Up / Down Today", f"🟢 {n_up} / 🔴 {n_dn}")
+    c2.metric("Up / Down Today", f"{n_up} / {n_dn}")
     c3.metric("Combined Revenue (latest filings)", fmt_m(total_rev))
     c4.metric("Combined Net Income (latest filings)", fmt_m(total_ni))
 
@@ -1217,7 +1217,7 @@ def page_portfolio(df: pd.DataFrame) -> None:
                 "P/E": st.column_config.NumberColumn(format="%.1f×"),
             },
         )
-        st.caption("Open any holding in **📊 Stock Detail** for 10-yr history & projections.")
+        st.caption("Open any holding in **Stock Detail** for 10-yr history & projections.")
 
     with pie_col:
         st.markdown("**Sector Mix**")
@@ -1259,13 +1259,13 @@ def page_portfolio(df: pd.DataFrame) -> None:
 
     if can_edit:
         st.divider()
-        with st.expander("✏️ Edit Class Portfolio", expanded=False):
+        with st.expander("Edit Class Portfolio", expanded=False):
             _portfolio_builder(df, portfolio)
 
 
 def page_risk_analysis(df: pd.DataFrame) -> None:
     """Cross-sector risk and performance comparison."""
-    st.title("⚠️ Risk & Comparative Analysis")
+    st.title("Risk & Comparative Analysis")
 
     latest = latest_per_ticker(df).copy()
     latest_year = int(latest["year"].max()) if len(latest) else int(df["year"].max())
@@ -1369,16 +1369,16 @@ def page_login() -> None:
     }
     </style>
     """, unsafe_allow_html=True)
-    st.title("📈 S&P 500 Analytics — Sign In")
+    st.title("S&P 500 Analytics — Sign In")
     token, _, _ = _gh_cfg()
     if not token:
         st.warning(
-            "⚙️ Account storage isn't configured yet. The site owner must add "
+            "Account storage isn't configured yet. The site owner must add "
             "the `[auth]` and `[github]` sections to Streamlit secrets "
             "(app menu → Settings → Secrets)."
         )
 
-    tab_in, tab_reg = st.tabs(["🔑 Sign in", "🎓 Register as professor"])
+    tab_in, tab_reg = st.tabs(["Sign in", "Register as professor"])
 
     with tab_in:
         with st.form("login"):
@@ -1458,7 +1458,7 @@ def _account_manager(role_key: str, role_label: str) -> None:
         owner = me
         if role_key == "students" and role == "admin" and professors:
             owner = st.selectbox("Assign to professor's class", professors + [me])
-        if st.form_submit_button(f"➕ Create {role_label} account", type="primary"):
+        if st.form_submit_button(f"Create {role_label} account", type="primary"):
             u = u.strip()
             taken = set(acc.get("students", {})) | set(acc.get("professors", {}))
             if not u or not pw:
@@ -1479,7 +1479,7 @@ def _account_manager(role_key: str, role_label: str) -> None:
         c1.markdown(f"**{u}**")
         extra = f" · class of {info['professor']}" if info.get("professor") and role == "admin" else ""
         c2.caption(f"added by {info.get('created_by', '?')} · {str(info.get('created_at', ''))[:10]}{extra}")
-        if c3.button("🗑️ Delete", key=f"del_{role_key}_{u}"):
+        if c3.button("Delete", key=f"del_{role_key}_{u}"):
             st.session_state["pending_delete"] = (role_key, u)
             st.rerun()
 
@@ -1489,12 +1489,12 @@ def _account_manager(role_key: str, role_label: str) -> None:
         _, name = pending
         st.divider()
         if role_key == "professors":
-            st.warning(f"⚠️ Deleting professor **{name}** also deletes ALL of their student accounts and their class portfolio access. This cannot be undone.")
+            st.warning(f"Deleting professor **{name}** also deletes ALL of their student accounts and their class portfolio access. This cannot be undone.")
         else:
-            st.warning(f"⚠️ You are about to permanently delete the {role_label} account **{name}**.")
+            st.warning(f"You are about to permanently delete the {role_label} account **{name}**.")
         typed = st.text_input(f"Type the username ({name}) to confirm:", key="confirm_del_text")
         c1, c2 = st.columns(2)
-        if c1.button("✅ Yes, delete this account", type="primary", use_container_width=True):
+        if c1.button("Yes, delete this account", type="primary", use_container_width=True):
             if typed.strip() == name:
                 delete_account(role_key, name)
                 st.session_state.pop("pending_delete", None)
@@ -1507,13 +1507,13 @@ def _account_manager(role_key: str, role_label: str) -> None:
 
 
 def page_manage_students() -> None:
-    st.title("👥 Manage Student Accounts")
+    st.title("Manage Student Accounts")
     st.caption("Students can sign in and view the class portfolio — they cannot edit it.")
     _account_manager("students", "student")
 
 
 def page_manage_professors() -> None:
-    st.title("🎓 Manage Professor Accounts")
+    st.title("Manage Professor Accounts")
     st.caption("Professors can edit the class portfolio and manage student accounts.")
     _account_manager("professors", "professor")
 
@@ -1521,14 +1521,14 @@ def page_manage_professors() -> None:
 # ── Role-specific how-to ──────────────────────────────────────────────────────
 
 def page_howto(role: str) -> None:
-    st.title("❓ How to Use This App")
+    st.title("How to Use This App")
 
     if DEMO_MODE:
         st.markdown("""
 ### Welcome to the public demo
 This is a fully working copy of a classroom app where professors build a stock
 portfolio and their students study it. Here, **you** play the professor: edit
-the portfolio on **💼 Portfolio** (or from any stock's detail page), and
+the portfolio on **Portfolio** (or from any stock's detail page), and
 every other page filters to your picks. Changes last for your browser session
 only — refresh and it resets.
 
@@ -1541,24 +1541,24 @@ Yahoo Finance.
         return
 
     common_view = """
-**💼 Class Portfolio** — the home page. Shows every stock in the portfolio with
+**Class Portfolio** — the home page. Shows every stock in the portfolio with
 live prices (refreshed every 5 minutes from Yahoo Finance), today's gainers and
 losers, a sector mix chart, and the portfolio's combined 10-year revenue.
 
-**🏠 Overview** — sector-by-sector summary of the portfolio companies, plus a
+**Overview** — sector-by-sector summary of the portfolio companies, plus a
 year-by-year recap of what happened in the market since 2015.
 
-**🔍 Stock Screener** — a sortable table of the portfolio companies. Filter by
+**Stock Screener** — a sortable table of the portfolio companies. Filter by
 sector, search by ticker, and sort by revenue, net income, EPS, or P/E.
 
-**📊 Stock Detail** — pick any company to see its live price chart, 10 years of
+**Stock Detail** — pick any company to see its live price chart, 10 years of
 financials, and Bear / Base / Bull projections to 2030. The growth-rate slider
 lets you test "what if" scenarios — it only changes the charts on your screen.
 
-**⚠️ Risk Analysis** — compares the portfolio companies: revenue by sector,
+**Risk Analysis** — compares the portfolio companies: revenue by sector,
 margins, and debt-vs-return scatter.
 
-ℹ️ Financial data comes from official SEC 10-K filings and updates automatically
+Financial data comes from official SEC 10-K filings and updates automatically
 twice a day — nobody needs to upload anything.
 """
 
@@ -1585,17 +1585,17 @@ every professor has a separate class. Your students see exactly the portfolio
 you build — view-only. Other professors can't see or change your class.
 
 ### Building the portfolio
-On **💼 Class Portfolio**, use the picker to choose any number of S&P 500
-stocks, then hit **Save**. To change it later, open **✏️ Edit Class
+On **Class Portfolio**, use the picker to choose any number of S&P 500
+stocks, then hit **Save**. To change it later, open **Edit Class
 Portfolio** at the bottom of that page. You can also add or remove a single
-stock from its **📊 Stock Detail** page.
+stock from its **Stock Detail** page.
 
 ### Exploring beyond the portfolio
-The sidebar toggle **"💼 Portfolio companies only"** is on by default. Turn it
+The sidebar toggle **"Portfolio companies only"** is on by default. Turn it
 off to browse all S&P 500 companies — useful when deciding what to add.
 
 ### Managing students
-On **👥 Manage Students**, create an account by typing a username and password,
+On **Manage Students**, create an account by typing a username and password,
 then share those with the student. Students you create belong to your class
 only. To delete an account you'll be asked to
 re-type the username as confirmation — deletions are permanent.
@@ -1607,13 +1607,13 @@ re-type the username as confirmation — deletions are permanent.
         st.markdown(f"""
 ### Your role
 You have full control: everything a professor can do, **plus** creating and
-deleting professor accounts on **🎓 Manage Professors** (same typed-confirmation
+deleting professor accounts on **Manage Professors** (same typed-confirmation
 rule as student deletions).
 
 ### Typical setup flow
 1. Add `professor_code = "YOUR-CODE"` to the `[auth]` section of Streamlit
    secrets and share that code with professors — they register themselves on
-   the login page. (You can also create them on **🎓 Manage Professors**.)
+   the login page. (You can also create them on **Manage Professors**.)
 2. Each professor builds their own class portfolio and creates their student logins.
 3. Students sign in and see their professor's portfolio, view-only.
 4. The sidebar "Viewing class of" picker lets you inspect any professor's class.
@@ -1650,10 +1650,10 @@ def main() -> None:
         return
     role = auth["role"]
 
-    st.sidebar.markdown("## 📈 S&P 500 Analytics")
+    st.sidebar.markdown("## S&P 500 Analytics")
     if DEMO_MODE:
-        st.sidebar.caption("🌐 Public demo — explore freely! Portfolio edits last for your session only.")
-        if st.sidebar.button("🔄 Refresh prices", use_container_width=True):
+        st.sidebar.caption("Public demo — explore freely! Portfolio edits last for your session only.")
+        if st.sidebar.button("Refresh prices", use_container_width=True):
             fetch_live_price.clear()
             fetch_live_prices_bulk.clear()
             fetch_price_history.clear()
@@ -1661,12 +1661,12 @@ def main() -> None:
     else:
         st.sidebar.caption(f"Signed in as **{auth['username']}** · {role}")
         c1, c2 = st.sidebar.columns(2)
-        if c1.button("🔄 Refresh", use_container_width=True, help="Re-fetch live prices and the latest portfolio"):
+        if c1.button("Refresh", use_container_width=True, help="Re-fetch live prices and the latest portfolio"):
             st.session_state["gh_v"] = st.session_state.get("gh_v", 0) + 1
             fetch_live_price.clear()
             fetch_price_history.clear()
             st.rerun()
-        if c2.button("🚪 Log out", use_container_width=True):
+        if c2.button("Log out", use_container_width=True):
             st.session_state.pop("auth", None)
             st.rerun()
     st.sidebar.markdown("---")
@@ -1682,17 +1682,17 @@ def main() -> None:
             )
 
     pages = {
-        ("💼 Portfolio" if DEMO_MODE else "💼 Class Portfolio"):  "portfolio",
-        "🏠 Overview":         "overview",
-        "🔍 Stock Screener":   "screener",
-        "📊 Stock Detail":     "stock",
-        "⚠️ Risk Analysis":    "risk",
+        ("Portfolio" if DEMO_MODE else "Class Portfolio"):  "portfolio",
+        "Overview":         "overview",
+        "Stock Screener":   "screener",
+        "Stock Detail":     "stock",
+        "Risk Analysis":    "risk",
     }
     if role in ("professor", "admin") and not DEMO_MODE:
-        pages["👥 Manage Students"] = "students"
+        pages["Manage Students"] = "students"
     if role == "admin" and not DEMO_MODE:
-        pages["🎓 Manage Professors"] = "professors"
-    pages["❓ How to Use"] = "howto"
+        pages["Manage Professors"] = "professors"
+    pages["How to Use"] = "howto"
 
     page_label = st.sidebar.radio("Navigate", list(pages.keys()), label_visibility="collapsed")
     page = pages[page_label]
@@ -1705,13 +1705,13 @@ def main() -> None:
         if portfolio:
             df_view = df[df["ticker"].isin(portfolio)]
         elif page not in ("howto", "portfolio"):
-            st.title("💼 Class Portfolio")
+            st.title("Class Portfolio")
             st.info("Your professor hasn't added stocks yet — check back soon!")
             return
     elif portfolio:
         st.sidebar.markdown("---")
         pf_only = st.sidebar.toggle(
-            "💼 Portfolio companies only",
+            "Portfolio companies only",
             value=True,
             key="pf_only_toggle",
             help="Filter pages to the class portfolio. Turn off to explore all companies and add new ones.",
