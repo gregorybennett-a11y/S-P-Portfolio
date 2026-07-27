@@ -29,7 +29,7 @@ pio.templates["sp_dark"] = go.layout.Template(layout=go.Layout(
     barcornerradius=5,
     colorway=["#818cf8", "#22d3ee", "#34d399", "#fbbf24", "#fb7185",
               "#a78bfa", "#f472b6", "#38bdf8"],
-), data=dict(scatter=[go.Scatter(line=dict(shape="spline", smoothing=0.6))]))
+))
 pio.templates.default = "plotly_dark+sp_dark"
 
 # ── Page config + global CSS ──────────────────────────────────────────────────
