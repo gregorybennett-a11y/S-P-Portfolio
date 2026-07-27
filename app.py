@@ -26,6 +26,7 @@ pio.templates["sp_dark"] = go.layout.Template(layout=go.Layout(
     xaxis=dict(gridcolor="rgba(148,163,184,.08)", zerolinecolor="rgba(148,163,184,.08)"),
     yaxis=dict(gridcolor="rgba(148,163,184,.08)", zerolinecolor="rgba(148,163,184,.08)"),
     legend=dict(bgcolor="rgba(0,0,0,0)"),
+    barcornerradius=5,
     colorway=["#818cf8", "#22d3ee", "#34d399", "#fbbf24", "#fb7185",
               "#a78bfa", "#f472b6", "#38bdf8"],
 ), data=dict(scatter=[go.Scatter(line=dict(shape="spline", smoothing=0.6))]))
@@ -252,23 +253,23 @@ METRICS = [
 ]
 
 SECTOR_COLORS = {
-    "Information Technology": "#3d7fe6",
-    "Communication Services": "#9b59b6",
-    "Consumer Discretionary": "#e67e22",
-    "Consumer Staples":       "#27ae60",
-    "Energy":                 "#e74c3c",
-    "Financials":             "#f39c12",
-    "Health Care":            "#1abc9c",
-    "Industrials":            "#3498db",
-    "Materials":              "#8e44ad",
-    "Real Estate":            "#d35400",
-    "Utilities":              "#16a085",
-    "Other":                  "#7f8c8d",
+    "Information Technology": "#6366f1",
+    "Communication Services": "#a78bfa",
+    "Consumer Discretionary": "#f59e0b",
+    "Consumer Staples":       "#34d399",
+    "Energy":                 "#fb7185",
+    "Financials":             "#22d3ee",
+    "Health Care":            "#2dd4bf",
+    "Industrials":            "#38bdf8",
+    "Materials":              "#c084fc",
+    "Real Estate":            "#fb923c",
+    "Utilities":              "#4ade80",
+    "Other":                  "#64748b",
 }
 
 
 SCENARIO_MULT = {"Bear": 0.55, "Base": 1.0, "Bull": 1.45}
-SCENARIO_COLOR = {"Bear": "#f85149", "Base": "#e3b341", "Bull": "#3fb950"}
+SCENARIO_COLOR = {"Bear": "#fb7185", "Base": "#fbbf24", "Bull": "#34d399"}
 
 MAX_PORTFOLIO_SIZE = 503  # whole S&P 500 — prices are batch-fetched so size is not a problem
 
@@ -729,18 +730,18 @@ def make_metric_chart(
         ))
 
     # Vertical divider at 2025/2026 boundary
-    fig.add_vline(x="2025", line_dash="dash", line_color="#4a5568", line_width=1)
-    fig.add_annotation(x="2025", y=1, yref="paper", text="Proj →",
-                       showarrow=False, font=dict(size=9, color="#4a5568"), xshift=22)
+    fig.add_vline(x="2025", line_dash="dash", line_color="rgba(148,163,184,.3)", line_width=1)
+    fig.add_annotation(x="2025", y=1, yref="paper", text="Projection →",
+                       showarrow=False, font=dict(size=10, color="#94a3b8"), xshift=34)
 
     fig.update_layout(
-        title=dict(text=label, font=dict(size=15, color="#c9d1d9")),
+        title=dict(text=label, font=dict(size=15, color="#e2e8f0"), x=0.01, xanchor="left"),
         height=400,
-        margin=dict(l=10, r=10, t=42, b=34),
+        margin=dict(l=10, r=10, t=58, b=16),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(13,20,38,0.45)",
-        font=dict(color="#8b949e", size=12),
-        legend=dict(orientation="h", y=-0.18, font=dict(size=11)),
+        font=dict(color="#9aa8bd", size=12),
+        legend=dict(orientation="h", y=1.12, x=1, xanchor="right", font=dict(size=11)),
         xaxis=dict(gridcolor="#26314e", tickfont=dict(size=12), showgrid=False),
         yaxis=dict(gridcolor="#26314e", tickfont=dict(size=12)),
         hovermode="x unified",
@@ -753,8 +754,8 @@ def make_price_chart(hist_df: pd.DataFrame, ticker: str, color: str) -> go.Figur
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=hist_df.index, y=hist_df["Close"],
-        name="Close", line=dict(color=color, width=2),
-        fill="tozeroy", fillcolor=rgba(color, 0.08),
+        name="Close", line=dict(color=color, width=2.5),
+        fill="tozeroy", fillcolor=rgba(color, 0.10),
         hovertemplate="%{x|%b %d, %Y}: $%{y:.2f}<extra></extra>",
     ))
     fig.update_layout(
@@ -765,6 +766,7 @@ def make_price_chart(hist_df: pd.DataFrame, ticker: str, color: str) -> go.Figur
         font=dict(color="#8b949e", size=12),
         xaxis=dict(gridcolor="#26314e", showgrid=False),
         yaxis=dict(gridcolor="#26314e", tickprefix="$"),
+        hovermode="x unified",
         showlegend=False,
     )
     return fig
@@ -807,7 +809,7 @@ def make_projection_summary_chart(
     ))
     fig.add_trace(go.Bar(
         x=years_str, y=safe_list(ni_base), name="Net Income (Base)",
-        marker_color="rgba(63,185,80,0.80)", offsetgroup=1,
+        marker_color="rgba(52,211,153,0.85)", offsetgroup=1,
     ))
     fig.add_trace(go.Scatter(
         x=years_str, y=safe_list(rev_bear), name="Rev Bear",
@@ -820,13 +822,13 @@ def make_projection_summary_chart(
 
     fig.update_layout(
         barmode="group",
-        title=dict(text="Revenue & Net Income Forecast 2026–2030", font=dict(size=14, color="#c9d1d9")),
+        title=dict(text="Revenue & Net Income Forecast 2026–2030", font=dict(size=14, color="#e2e8f0"), x=0.01, xanchor="left"),
         height=340,
         margin=dict(l=10, r=10, t=35, b=30),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(13,20,38,0.45)",
         font=dict(color="#8b949e", size=10),
-        legend=dict(orientation="h", y=-0.25, font=dict(size=9)),
+        legend=dict(orientation="h", y=-0.22, font=dict(size=10)),
         xaxis=dict(gridcolor="#26314e", showgrid=False),
         yaxis=dict(gridcolor="#26314e"),
     )
@@ -1314,12 +1316,21 @@ def page_portfolio(df: pd.DataFrame) -> None:
             mix.columns = ["sector", "count"]
             fig = px.pie(
                 mix, names="sector", values="count",
-                color="sector", color_discrete_map=SECTOR_COLORS, hole=0.45,
+                color="sector", color_discrete_map=SECTOR_COLORS, hole=0.62,
+            )
+            fig.update_traces(
+                marker=dict(line=dict(color="#05070d", width=2)),
+                textfont=dict(size=12, color="#f1f5f9"),
+            )
+            fig.add_annotation(
+                text=(f"<b>{int(mix['count'].sum())}</b><br>"
+                      "<span style='font-size:10px;color:#94a3b8'>holdings</span>"),
+                showarrow=False, font=dict(size=22, color="#f1f5f9"),
             )
             fig.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#8b949e", size=10),
-                height=300, margin=dict(l=10, r=10, t=10, b=10),
-                legend=dict(font=dict(size=9)),
+                paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#9aa8bd", size=11),
+                height=320, margin=dict(l=10, r=10, t=10, b=10),
+                legend=dict(font=dict(size=10)),
             )
             st.plotly_chart(fig, use_container_width=True)
 
