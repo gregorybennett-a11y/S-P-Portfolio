@@ -960,13 +960,15 @@ def page_stock_detail(df: pd.DataFrame) -> None:
     if "selected_ticker" not in st.session_state:
         st.session_state.selected_ticker = "AAPL"
 
-    ticker = st.sidebar.selectbox(
-        "Select Ticker",
-        all_tickers,
-        index=all_tickers.index(st.session_state.selected_ticker)
-        if st.session_state.selected_ticker in all_tickers else 0,
-        key="ticker_selector",
-    )
+    sel_col, _ = st.columns([2, 3])
+    with sel_col:
+        ticker = st.selectbox(
+            "Select Ticker",
+            all_tickers,
+            index=all_tickers.index(st.session_state.selected_ticker)
+            if st.session_state.selected_ticker in all_tickers else 0,
+            key="ticker_selector",
+        )
     st.session_state.selected_ticker = ticker
 
     tdf = get_ticker_df(df, ticker)
