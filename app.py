@@ -28,7 +28,7 @@ pio.templates["sp_dark"] = go.layout.Template(layout=go.Layout(
     legend=dict(bgcolor="rgba(0,0,0,0)"),
     colorway=["#818cf8", "#22d3ee", "#34d399", "#fbbf24", "#fb7185",
               "#a78bfa", "#f472b6", "#38bdf8"],
-))
+), data=dict(scatter=[go.Scatter(line=dict(shape="spline", smoothing=0.6))]))
 pio.templates.default = "plotly_dark+sp_dark"
 
 # ── Page config + global CSS ──────────────────────────────────────────────────
@@ -127,6 +127,94 @@ div[data-testid="stExpander"] { background: rgba(15,23,42,.45);
 div[data-testid="stAlert"] { border-radius: 12px; backdrop-filter: blur(8px); }
 .stTabs [data-baseweb="tab-list"] { gap: .4rem; }
 hr { border-color: rgba(148,163,184,.12) !important; }
+
+/* ═══ Motion layer ═══ */
+@keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes sheen  { to { background-position: 200% center; } }
+@keyframes drift  {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%     { transform: translate(-50px,35px) scale(1.07); }
+}
+
+/* Ambient light drift behind content */
+.stApp::before {
+  content:''; position: fixed; inset: -15%;
+  background:
+    radial-gradient(620px 420px at 22% 12%, rgba(99,102,241,.10), transparent 60%),
+    radial-gradient(720px 480px at 78% 18%, rgba(34,211,238,.07), transparent 60%);
+  animation: drift 26s ease-in-out infinite;
+  pointer-events: none; will-change: transform;
+}
+
+/* Entrance animation (plays on mount) */
+[data-testid="stElementContainer"], .element-container { animation: fadeUp .4s ease-out both; }
+[data-testid="stColumn"]:nth-of-type(2) [data-testid="stElementContainer"] { animation-delay: .06s; }
+[data-testid="stColumn"]:nth-of-type(3) [data-testid="stElementContainer"] { animation-delay: .12s; }
+[data-testid="stColumn"]:nth-of-type(4) [data-testid="stElementContainer"] { animation-delay: .18s; }
+
+/* Charts in glass panels with hover glow */
+[data-testid="stPlotlyChart"] {
+  background: rgba(15,23,42,.45); border: 1px solid rgba(148,163,184,.12);
+  border-radius: 16px; padding: .55rem .35rem .15rem; backdrop-filter: blur(10px);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+[data-testid="stPlotlyChart"]:hover {
+  border-color: rgba(99,102,241,.35);
+  box-shadow: 0 10px 34px rgba(99,102,241,.10);
+}
+
+/* Micro-interactions */
+.stButton > button { transition: border-color .15s ease, box-shadow .15s ease, transform .1s ease; }
+.stButton > button:active { transform: scale(.97); }
+div[data-testid="stMetric"] {
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+div[data-testid="stMetric"]:hover {
+  transform: translateY(-2px); border-color: rgba(99,102,241,.45);
+  box-shadow: 0 12px 30px rgba(2,6,23,.5);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,.35); border-radius: 8px;
+  border: 2px solid transparent; background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(99,102,241,.6); }
+
+/* Page title gradient underline */
+h1 { position: relative; padding-bottom: .4rem; }
+h1::after {
+  content:''; position:absolute; left:0; bottom:0; width:64px; height:3px;
+  border-radius:3px; background: linear-gradient(90deg,#6366f1,#22d3ee);
+}
+
+/* Sidebar brand: animated gradient shimmer */
+[data-testid="stSidebar"] h2 {
+  background: linear-gradient(120deg,#e2e8f0,#818cf8,#22d3ee,#e2e8f0);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: sheen 7s linear infinite;
+  font-weight: 800; letter-spacing: -.02em;
+}
+
+/* Sidebar nav slide-on-hover */
+[data-testid="stSidebar"] [role="radiogroup"] label {
+  transition: background .15s ease, padding-left .15s ease;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover { padding-left: .85rem; }
+
+/* Metric card hover sheen sweep */
+.metric-card { position: relative; overflow: hidden; }
+.metric-card::after {
+  content:''; position:absolute; top:0; left:-70%; width:45%; height:100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.045), transparent);
+  transform: skewX(-20deg); transition: left .45s ease;
+}
+.metric-card:hover::after { left: 130%; }
+
 </style>
 """, unsafe_allow_html=True)
 
