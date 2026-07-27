@@ -699,8 +699,8 @@ def make_metric_chart(
     all_labels = [str(y) for y in HIST_YEARS + PROJ_YEARS]
     fig = go.Figure()
 
-    # Historical line
-    hist_x = [str(y) for y in HIST_YEARS]
+    # Historical line (numeric years — string years break on plotly >= 6)
+    hist_x = list(HIST_YEARS)
     hist_y = [v for v in hist]
     fig.add_trace(go.Scatter(
         x=hist_x, y=hist_y, name="Historical",
@@ -717,9 +717,9 @@ def make_metric_chart(
             continue
         # Bridge from last historical point
         last_hist_yr = next((y for y in reversed(HIST_YEARS) if hist[HIST_YEARS.index(y)] is not None), None)
-        bridge_x = [str(last_hist_yr)] if last_hist_yr else []
+        bridge_x = [last_hist_yr] if last_hist_yr else []
         bridge_y = [hist[HIST_YEARS.index(last_hist_yr)]] if last_hist_yr else []
-        proj_x = bridge_x + [str(y) for y in PROJ_YEARS]
+        proj_x = bridge_x + list(PROJ_YEARS)
         proj_y = bridge_y + [proj.get(y) for y in PROJ_YEARS]
         dash = "solid" if sce == "Base" else "dot"
         fig.add_trace(go.Scatter(
@@ -730,9 +730,9 @@ def make_metric_chart(
         ))
 
     # Vertical divider at 2025/2026 boundary
-    fig.add_vline(x="2025", line_dash="dash", line_color="rgba(148,163,184,.3)", line_width=1)
-    fig.add_annotation(x="2025", y=1, yref="paper", text="Projection →",
-                       showarrow=False, font=dict(size=10, color="#94a3b8"), xshift=34)
+    fig.add_vline(x=2025.5, line_dash="dash", line_color="rgba(148,163,184,.3)", line_width=1)
+    fig.add_annotation(x=2025.5, y=1, yref="paper", text="Projection →",
+                       showarrow=False, font=dict(size=10, color="#94a3b8"), xshift=40)
 
     fig.update_layout(
         title=dict(text=label, font=dict(size=15, color="#e2e8f0"), x=0.01, xanchor="left"),
@@ -742,7 +742,8 @@ def make_metric_chart(
         plot_bgcolor="rgba(13,20,38,0.45)",
         font=dict(color="#9aa8bd", size=12),
         legend=dict(orientation="h", y=1.12, x=1, xanchor="right", font=dict(size=11)),
-        xaxis=dict(gridcolor="#26314e", tickfont=dict(size=12), showgrid=False),
+        xaxis=dict(gridcolor="#26314e", tickfont=dict(size=12), showgrid=False,
+                   tickformat="d", dtick=2),
         yaxis=dict(gridcolor="#26314e", tickfont=dict(size=12)),
         hovermode="x unified",
     )
