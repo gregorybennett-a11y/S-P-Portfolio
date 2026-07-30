@@ -1736,6 +1736,550 @@ rule as student deletions).
 """)
 
 
+# ── Company Report page ───────────────────────────────────────────────────────
+# Text-first research note per company: profile, market snapshot, key metrics,
+# strengths/weaknesses, risk (qualitative + quantitative), valuation, industry
+# position, and recent news sentiment. Fundamentals come from the pipeline CSV;
+# profile / market / news data come from Yahoo Finance (yfinance), cached.
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def load_descriptions() -> dict:
+    """Company description text keyed by ticker (repo JSON)."""
+    for p in [Path("data/company_descriptions.json"), Path("sp500/descriptions.json")]:
+        if p.exists():
+            try:
+                return json.loads(p.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+    return {}
+
+
+@st.cache_data(ttl=3600, show_spinner=False, max_entries=300)
+def fetch_company_profile(ticker: str) -> dict:
+    """Slim slice of yfinance .info — profile, market and valuation fields."""
+    try:
+        info = yf.Ticker(ticker).info or {}
+    except Exception:
+        return {}
+    keys = [
+        "longName", "shortName", "longBusinessSummary", "sector", "industry",
+        "website", "fullTimeEmployees", "city", "state", "country",
+        "fiftyTwoWeekHigh", "fiftyTwoWeekLow", "averageVolume", "beta",
+        "trailingPE", "forwardPE", "priceToBook", "priceToSalesTrailing12Months",
+        "pegRatio", "enterpriseToEbitda", "dividendYield", "marketCap",
+        "ebitda", "totalDebt", "totalCash", "currentPrice", "debtToEquity",
+        "returnOnEquity", "profitMargins", "revenueGrowth",
+    ]
+    return {k: info.get(k) for k in keys}
+
+
+@st.cache_data(ttl=3600, show_spinner=False, max_entries=300)
+def fetch_interest_coverage(ticker: str) -> pd.DataFrame | None:
+    """Interest coverage (EBITDA / interest expense) per fiscal year.
+
+    Pulled from the yfinance annual income statement (~4 years). Falls back to
+    operating income when EBITDA is unavailable.
+    """
+    try:
+        inc = yf.Ticker(ticker).income_stmt
+        if inc is None or inc.empty:
+            return None
+        rows = {lbl: inc.loc[lbl] for lbl in
+                ("EBITDA", "Interest Expense", "Operating Income") if lbl in inc.index}
+        if "Interest Expense" not in rows:
+            return None
+        out = []
+        for col in inc.columns:
+            ie = rows["Interest Expense"].get(col)
+            eb = rows.get("EBITDA", pd.Series(dtype=float)).get(col)
+            oi = rows.get("Operating Income", pd.Series(dtype=float)).get(col)
+            num = eb if (eb is not None and not pd.isna(eb)) else oi
+            if ie is not None and not pd.isna(ie) and ie != 0 \
+                    and num is not None and not pd.isna(num):
+                out.append({
+                    "year": int(getattr(col, "year", 0)) or int(str(col)[:4]),
+                    "coverage": float(abs(num) / abs(ie)),
+                    "basis": "EBITDA" if (eb is not None and not pd.isna(eb)) else "Op. income",
+                })
+        return pd.DataFrame(out).sort_values("year") if out else None
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=1800, show_spinner=False, max_entries=300)
+def fetch_company_news(ticker: str) -> list[dict]:
+    """Recent headlines via yfinance. Handles both old and new payload shapes."""
+    try:
+        raw = yf.Ticker(ticker).news or []
+    except Exception:
+        return []
+    items = []
+    for n in raw[:10]:
+        c = n.get("content", n) if isinstance(n, dict) else {}
+        title = c.get("title")
+        if not title:
+            continue
+        url = ""
+        for k in ("canonicalUrl", "clickThroughUrl"):
+            v = c.get(k)
+            if isinstance(v, dict) and v.get("url"):
+                url = v["url"]
+                break
+        url = url or n.get("link", "")
+        prov = c.get("provider")
+        source = prov.get("displayName", "") if isinstance(prov, dict) else n.get("publisher", "")
+        pub = str(c.get("pubDate") or c.get("providerPublishTime") or "")[:10]
+        items.append({"title": title, "url": url, "source": source,
+                      "published": pub, "summary": (c.get("summary") or "")[:280]})
+    return items
+
+
+# Small lexicon for headline sentiment — deliberately simple and transparent.
+_POS_WORDS = {
+    "beat", "beats", "surge", "surges", "soar", "soars", "record", "growth",
+    "strong", "upgrade", "upgraded", "raise", "raises", "raised", "buy",
+    "outperform", "profit", "gain", "gains", "rally", "rallies", "jump",
+    "jumps", "boost", "boosts", "wins", "win", "expands", "expansion",
+    "breakthrough", "dividend", "buyback", "tops", "exceed", "exceeds",
+}
+_NEG_WORDS = {
+    "miss", "misses", "fall", "falls", "drop", "drops", "plunge", "plunges",
+    "weak", "downgrade", "downgraded", "cut", "cuts", "sell", "underperform",
+    "loss", "losses", "lawsuit", "probe", "investigation", "recall", "layoff",
+    "layoffs", "warning", "warns", "decline", "declines", "slump", "slumps",
+    "fine", "fined", "risk", "concern", "concerns", "tumble", "tumbles",
+}
+
+
+def score_headline(title: str) -> int:
+    """Return +1 / 0 / -1 sentiment for a headline via lexicon match."""
+    words = {w.strip(".,!?:;()'\"").lower() for w in title.split()}
+    score = len(words & _POS_WORDS) - len(words & _NEG_WORDS)
+    return 1 if score > 0 else (-1 if score < 0 else 0)
+
+
+_SECTOR_RISK_NOTES = {
+    "Information Technology": "Technology companies face rapid product cycles, intense competition for talent, and the constant risk of disruption — but tend to carry high margins and light balance sheets.",
+    "Health Care": "Health care carries regulatory and patent-cliff risk (drug approvals, pricing reform), partially offset by demand that holds up in recessions.",
+    "Financials": "Financials are sensitive to interest rates, credit cycles and regulation; leverage is inherent to the business model, so headline debt ratios read differently here.",
+    "Consumer Discretionary": "Discretionary names are cyclical — revenue tracks consumer confidence and disposable income, so downturns hit harder than for staples.",
+    "Consumer Staples": "Staples are defensive with steady demand, but face thin margins, private-label pressure and input-cost inflation.",
+    "Energy": "Energy earnings swing with commodity prices largely outside management control; capital discipline and break-even costs are the key variables.",
+    "Industrials": "Industrials are tied to capex cycles and global trade; backlog quality and margin execution matter more than headline growth.",
+    "Materials": "Materials are price-takers on global commodities; costs, capacity discipline and currency drive results.",
+    "Utilities": "Utilities offer regulated, stable cash flows but carry heavy debt loads by design and are sensitive to interest rates and rate-case outcomes.",
+    "Real Estate": "REITs and real-estate names depend on occupancy, rates and refinancing conditions; distributions limit retained capital.",
+    "Communication Services": "Communication services mixes high-growth platforms with mature telecoms; advertising cyclicality and content costs are the swing factors.",
+}
+
+
+def _sector_medians(df: pd.DataFrame, sector: str) -> dict:
+    """Median latest-year metrics for a sector — the comparison baseline."""
+    latest = latest_per_ticker(df)
+    sec = latest[latest["sector"] == sector]
+    if sec.empty:
+        return {}
+    out = {}
+    for c in ("gross_margin_pct", "rev_growth_pct", "roe_pct", "debt_equity",
+              "pe_ratio", "dividend_yield_pct"):
+        if c in sec.columns:
+            vals = sec[c]
+            if c == "pe_ratio":       # negative P/E (loss-makers) breaks the median
+                vals = vals[(vals > 0) & (vals < 200)]
+            v = vals.median()
+            out[c] = float(v) if not pd.isna(v) else None
+    out["n"] = len(sec)
+    return out
+
+
+def _num(v):
+    """None-safe float: returns None for NaN/None."""
+    if v is None or (isinstance(v, float) and np.isnan(v)):
+        return None
+    return float(v)
+
+
+def analyze_strengths_weaknesses(tdf: pd.DataFrame, med: dict) -> tuple[list, list]:
+    """Rule-based strengths / weaknesses from the company's own 10-K history
+    compared against its sector's medians."""
+    strengths, weaknesses = [], []
+    rows = tdf[tdf["revenue_m"].notna()].sort_values("year")
+    if rows.empty:
+        return strengths, weaknesses
+    last = rows.iloc[-1]
+
+    gm = _num(last.get("gross_margin_pct"))
+    med_gm = med.get("gross_margin_pct")
+    if gm is not None and med_gm:
+        if gm >= med_gm * 1.15:
+            strengths.append(f"**High-margin business** — gross margin of {gm:.0f}% sits well above the sector median of {med_gm:.0f}%, giving pricing power and room to absorb cost shocks.")
+        elif gm <= med_gm * 0.75:
+            weaknesses.append(f"**Below-average margins** — gross margin of {gm:.0f}% trails the sector median of {med_gm:.0f}%, leaving less cushion when costs rise.")
+
+    rg_rows = rows[rows["rev_growth_pct"].notna()].tail(3)
+    if len(rg_rows):
+        avg_g = float(rg_rows["rev_growth_pct"].mean())
+        if avg_g >= 10:
+            strengths.append(f"**Strong top-line growth** — revenue has grown ~{avg_g:.0f}% a year on average over the last {len(rg_rows)} reported years.")
+        elif avg_g < 0:
+            weaknesses.append(f"**Shrinking revenue** — sales have declined ~{abs(avg_g):.0f}% a year on average over the last {len(rg_rows)} reported years.")
+
+    fcf = _num(last.get("free_cash_flow_m"))
+    rev = _num(last.get("revenue_m"))
+    if fcf is not None and rev:
+        conv = fcf / rev * 100
+        if conv >= 15:
+            strengths.append(f"**Cash generative** — free cash flow is ~{conv:.0f}% of revenue ({fmt_m(fcf)}), funding dividends, buybacks or reinvestment without borrowing.")
+        elif fcf < 0:
+            weaknesses.append(f"**Burning cash** — free cash flow was negative ({fmt_m(fcf)}) in the latest year, so operations plus capex consume more than they produce.")
+
+    roe = _num(last.get("roe_pct"))
+    if roe is not None:
+        if roe >= 20:
+            strengths.append(f"**High returns on equity** — ROE of {roe:.0f}% means shareholder capital is being put to work efficiently.")
+        elif roe < 5:
+            weaknesses.append(f"**Weak returns on equity** — ROE of {roe:.0f}% suggests capital is earning little for shareholders.")
+
+    de = _num(last.get("debt_equity"))
+    med_de = med.get("debt_equity")
+    if de is not None:
+        if de <= 0.5:
+            strengths.append(f"**Conservative balance sheet** — debt/equity of {de:.2f} is low, leaving borrowing capacity for downturns or acquisitions.")
+        elif med_de and de >= max(2.0, med_de * 1.75):
+            weaknesses.append(f"**Heavy leverage** — debt/equity of {de:.2f} is well above the sector median of {med_de:.2f}; refinancing and interest costs are a real exposure.")
+
+    ni_rows = rows[rows["net_income_m"].notna()]
+    if len(ni_rows) >= 3 and (ni_rows["net_income_m"] < 0).any():
+        n_loss = int((ni_rows["net_income_m"] < 0).sum())
+        weaknesses.append(f"**Inconsistent profitability** — {n_loss} loss-making year(s) in the reported history.")
+    elif len(ni_rows) >= 5 and (ni_rows["net_income_m"] > 0).all():
+        strengths.append(f"**Consistent profitability** — positive net income in every one of the last {len(ni_rows)} reported years.")
+
+    dy = _num(last.get("dividend_yield_pct"))
+    if dy is not None and dy >= 2.5:
+        strengths.append(f"**Meaningful dividend** — a {dy:.1f}% yield returns cash to shareholders while they wait.")
+
+    return strengths, weaknesses
+
+
+def page_company_report(df: pd.DataFrame) -> None:
+    """Text-first company research note — meant to be read, not just scanned."""
+    all_tickers = get_all_tickers(df)
+    if "selected_ticker" not in st.session_state:
+        st.session_state.selected_ticker = "AAPL"
+
+    sel_col, _ = st.columns([2, 3])
+    with sel_col:
+        ticker = st.selectbox(
+            "Select Company", all_tickers,
+            index=all_tickers.index(st.session_state.selected_ticker)
+            if st.session_state.selected_ticker in all_tickers else 0,
+            key="report_ticker_selector",
+        )
+    st.session_state.selected_ticker = ticker
+
+    tdf = get_ticker_df(df, ticker)
+    if tdf.empty:
+        st.warning(f"No data found for {ticker}.")
+        return
+
+    sector = tdf["sector"].iloc[0] if "sector" in tdf.columns else "Other"
+    color = SECTOR_COLORS.get(sector, "#3d7fe6")
+    rows = tdf[tdf["revenue_m"].notna()].sort_values("year")
+    last = rows.iloc[-1] if len(rows) else tdf.iloc[-1]
+    latest_year = int(last["year"])
+
+    with st.spinner("Loading company profile…"):
+        prof = fetch_company_profile(ticker)
+        quote = fetch_live_price(ticker)
+    name = prof.get("longName") or prof.get("shortName") or ticker
+    med = _sector_medians(df, sector)
+
+    # ── Header ──
+    hdr, pxc = st.columns([3, 1])
+    with hdr:
+        st.markdown(f"""
+        <div style="border-left:4px solid {color};padding-left:0.75rem;margin-bottom:0.5rem">
+          <div style="font-size:1.6rem;font-weight:700;color:#e6edf3;letter-spacing:-0.02em">{name} <span style="color:#8b949e;font-weight:500">({ticker})</span></div>
+          <div style="font-size:0.8rem;color:#8b949e;margin-top:0.15rem">{sector}{' · ' + prof['industry'] if prof.get('industry') else ''}</div>
+        </div>""", unsafe_allow_html=True)
+    with pxc:
+        if quote:
+            cc = "green" if quote["change_pct"] >= 0 else "red"
+            sg = "+" if quote["change_pct"] >= 0 else ""
+            st.markdown(f"""
+            <div style="text-align:right">
+              <div style="font-size:1.8rem;font-weight:700;color:#e6edf3">${quote['price']:.2f}</div>
+              <div style="font-size:0.85rem;color:{cc}">{sg}{quote['change']:.2f} ({sg}{quote['change_pct']:.2f}%)</div>
+              <div style="font-size:0.68rem;color:#4a5568;margin-top:0.2rem">Live · Yahoo Finance</div>
+            </div>""", unsafe_allow_html=True)
+
+    # ── What the company does ──
+    st.subheader("What the company does")
+    desc = load_descriptions().get(ticker, "")
+    if desc:
+        st.markdown(desc)
+    yf_desc = prof.get("longBusinessSummary")
+    if yf_desc:
+        with st.expander("Full business description (from the company profile)"):
+            st.markdown(yf_desc)
+            meta = []
+            if prof.get("fullTimeEmployees"):
+                meta.append(f"~{prof['fullTimeEmployees']:,} employees")
+            loc = ", ".join(x for x in (prof.get("city"), prof.get("state"), prof.get("country")) if x)
+            if loc:
+                meta.append(f"HQ: {loc}")
+            if prof.get("website"):
+                meta.append(f"[{prof['website']}]({prof['website']})")
+            if meta:
+                st.caption(" · ".join(meta))
+    if not desc and not yf_desc:
+        st.info("No description available for this company yet.")
+
+    # ── Market snapshot ──
+    st.subheader("Market snapshot")
+    lo, hi = _num(prof.get("fiftyTwoWeekLow")), _num(prof.get("fiftyTwoWeekHigh"))
+    price = _num(prof.get("currentPrice")) or (quote["price"] if quote else None)
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("52-week high", f"${hi:,.2f}" if hi else "—")
+    c2.metric("52-week low", f"${lo:,.2f}" if lo else "—")
+    av = prof.get("averageVolume")
+    c3.metric("Avg volume (3mo)", f"{av/1e6:.1f}M" if av else "—")
+    mc = prof.get("marketCap")
+    c4.metric("Market cap", fmt_m(mc / 1e6) if mc else "—")
+    beta = _num(prof.get("beta"))
+    c5.metric("Beta", f"{beta:.2f}" if beta is not None else "—")
+    if price and lo and hi and hi > lo:
+        pos = max(0.0, min(1.0, (price - lo) / (hi - lo)))
+        st.markdown(f"""
+        <div style="margin:0.3rem 0 0.6rem">
+          <div style="height:8px;border-radius:999px;background:linear-gradient(90deg,#fb7185,#fbbf24,#34d399);position:relative">
+            <div style="position:absolute;left:{pos*100:.1f}%;top:-4px;width:3px;height:16px;background:#e6edf3;border-radius:2px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#8b949e;margin-top:0.25rem">
+            <span>${lo:,.2f}</span>
+            <span>Currently {pos*100:.0f}% of the way up its 52-week range</span>
+            <span>${hi:,.2f}</span>
+          </div>
+        </div>""", unsafe_allow_html=True)
+        if beta is not None:
+            vol_txt = ("more volatile than" if beta > 1.15 else
+                       "about as volatile as" if beta >= 0.85 else "less volatile than")
+            st.caption(f"A beta of {beta:.2f} means the stock has historically been {vol_txt} the overall market.")
+
+    # ── Key financial metrics ──
+    st.subheader(f"Key financial metrics (FY {latest_year})")
+    rev, ni = _num(last.get("revenue_m")), _num(last.get("net_income_m"))
+    eps, gm = _num(last.get("eps_diluted")), _num(last.get("gross_margin_pct"))
+    fcf, roe = _num(last.get("free_cash_flow_m")), _num(last.get("roe_pct"))
+    rg = _num(last.get("rev_growth_pct"))
+    k1, k2, k3, k4, k5, k6 = st.columns(6)
+    k1.metric("Revenue", fmt_m(rev), f"{rg:+.1f}% YoY" if rg is not None else None)
+    k2.metric("Net income", fmt_m(ni))
+    k3.metric("EPS (diluted)", f"${eps:.2f}" if eps is not None else "—")
+    k4.metric("Gross margin", f"{gm:.1f}%" if gm is not None else "—")
+    k5.metric("Free cash flow", fmt_m(fcf))
+    k6.metric("ROE", f"{roe:.1f}%" if roe is not None else "—")
+    if len(rows) >= 2:
+        first = rows.iloc[0]
+        span = latest_year - int(first["year"])
+        bits = []
+        if _num(first.get("revenue_m")) and rev:
+            bits.append(f"revenue has gone from {fmt_m(float(first['revenue_m']))} to {fmt_m(rev)} ({pct_change(rev, float(first['revenue_m']))})")
+        if _num(first.get("net_income_m")) is not None and ni is not None:
+            bits.append(f"net income from {fmt_m(float(first['net_income_m']))} to {fmt_m(ni)}")
+        if bits:
+            st.markdown(f"Over the {span} years of reported history, {' and '.join(bits)}.")
+
+    # ── Strengths & weaknesses ──
+    st.subheader("Strengths & weaknesses")
+    strengths, weaknesses = analyze_strengths_weaknesses(tdf, med)
+    sc, wc = st.columns(2)
+    with sc:
+        st.markdown("##### Strengths")
+        if strengths:
+            for s in strengths:
+                st.markdown(f"- {s}")
+        else:
+            st.caption("No standout strengths versus sector peers in the reported data.")
+    with wc:
+        st.markdown("##### Weaknesses")
+        if weaknesses:
+            for w in weaknesses:
+                st.markdown(f"- {w}")
+        else:
+            st.caption("No major red flags versus sector peers in the reported data.")
+    st.caption(f"Generated automatically from {ticker}'s 10-K history vs. {med.get('n', 0)} {sector} peers. Not investment advice.")
+
+    # ── Risk analysis ──
+    st.subheader("Risk analysis")
+    de = _num(last.get("debt_equity"))
+    med_de = med.get("debt_equity")
+    risk_lines = []
+    if de is not None:
+        lvl = ("low" if de < 0.5 else "moderate" if de < 1.5 else "high")
+        cmp_txt = ""
+        if med_de:
+            cmp_txt = f" (sector median: {med_de:.2f})"
+        risk_lines.append(f"**Leverage** is {lvl}: debt/equity stands at {de:.2f}{cmp_txt}. " +
+                          ("Low leverage means the company can ride out downturns and borrow opportunistically."
+                           if de < 0.5 else
+                           "This is manageable in normal conditions but worth watching if rates rise or earnings dip."
+                           if de < 1.5 else
+                           "High leverage magnifies both good and bad years — interest costs and refinancing terms matter a lot here."))
+    cov_df = fetch_interest_coverage(ticker)
+    if cov_df is not None and len(cov_df):
+        cov = float(cov_df.iloc[-1]["coverage"])
+        basis = cov_df.iloc[-1]["basis"]
+        cov_lvl = ("very comfortable" if cov >= 10 else "adequate" if cov >= 4 else "thin")
+        risk_lines.append(f"**Interest coverage** ({basis} ÷ interest expense) is {cov:.1f}× — {cov_lvl}. This measures how many times over annual earnings could pay the interest bill; below ~3× is where credit analysts start to worry.")
+    if _num(last.get("free_cash_flow_m")) is not None and float(last["free_cash_flow_m"]) < 0:
+        risk_lines.append("**Cash burn**: free cash flow was negative in the latest fiscal year, so the company must fund itself from reserves or new capital.")
+    sec_note = _SECTOR_RISK_NOTES.get(sector)
+    if sec_note:
+        risk_lines.append(f"**Sector backdrop**: {sec_note}")
+    for line in risk_lines:
+        st.markdown(line)
+
+    r1, r2 = st.columns(2)
+    with r1:
+        de_rows = tdf[tdf["debt_equity"].notna()].sort_values("year")
+        if len(de_rows) >= 2:
+            fig = go.Figure(go.Scatter(
+                x=de_rows["year"].astype(int).tolist(), y=de_rows["debt_equity"].tolist(),
+                mode="lines+markers", line=dict(color="#fb7185", width=3),
+                fill="tozeroy", fillcolor=rgba("#fb7185", 0.09),
+                hovertemplate="%{x}: %{y:.2f}<extra></extra>"))
+            fig.update_layout(title=dict(text="Debt / Equity over time", font=dict(size=14), x=0.01, xanchor="left"),
+                              height=300, margin=dict(l=10, r=10, t=44, b=10),
+                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(13,20,38,0.45)",
+                              xaxis=dict(tickformat="d", dtick=2), showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.caption("Not enough debt/equity history to chart.")
+    with r2:
+        if cov_df is not None and len(cov_df):
+            colors = ["#34d399" if c >= 4 else "#fbbf24" if c >= 2 else "#fb7185"
+                      for c in cov_df["coverage"]]
+            fig = go.Figure(go.Bar(
+                x=cov_df["year"].astype(int).tolist(), y=cov_df["coverage"].tolist(),
+                marker_color=colors, hovertemplate="%{x}: %{y:.1f}×<extra></extra>"))
+            fig.add_hline(y=3, line_dash="dot", line_color="rgba(148,163,184,.5)",
+                          annotation_text="3× caution line", annotation_font_size=10)
+            fig.update_layout(title=dict(text="Interest coverage (×)", font=dict(size=14), x=0.01, xanchor="left"),
+                              height=300, margin=dict(l=10, r=10, t=44, b=10),
+                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(13,20,38,0.45)",
+                              xaxis=dict(tickformat="d", dtick=1), showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.caption("Interest coverage unavailable (no interest expense reported — common for cash-rich companies).")
+
+    # ── Valuation ──
+    st.subheader("Valuation")
+    tpe, fpe = _num(prof.get("trailingPE")), _num(prof.get("forwardPE"))
+    pb = _num(prof.get("priceToBook"))
+    ps = _num(prof.get("priceToSalesTrailing12Months"))
+    ev_eb = _num(prof.get("enterpriseToEbitda"))
+    dyv = _num(prof.get("dividendYield"))
+    if dyv is not None and dyv < 1:      # yfinance sometimes returns 0.0065 vs 0.65
+        dyv *= 100
+    v1, v2, v3, v4, v5, v6 = st.columns(6)
+    v1.metric("P/E (trailing)", f"{tpe:.1f}×" if tpe else "—")
+    v2.metric("P/E (forward)", f"{fpe:.1f}×" if fpe else "—")
+    v3.metric("Price / Sales", f"{ps:.1f}×" if ps else "—")
+    v4.metric("Price / Book", f"{pb:.1f}×" if pb else "—")
+    v5.metric("EV / EBITDA", f"{ev_eb:.1f}×" if ev_eb else "—")
+    v6.metric("Dividend yield", f"{dyv:.2f}%" if dyv is not None else "—")
+    med_pe = med.get("pe_ratio")
+    if tpe and med_pe:
+        rel = tpe / med_pe
+        verdict = ("at a clear premium to" if rel >= 1.3 else
+                   "roughly in line with" if rel >= 0.8 else "at a discount to")
+        st.markdown(
+            f"At {tpe:.1f}× trailing earnings, {ticker} trades {verdict} its sector "
+            f"(median P/E: {med_pe:.1f}× across {med.get('n', 0)} {sector} companies). "
+            + ("A premium multiple means the market expects above-average growth — the risk is disappointment. "
+               if rel >= 1.3 else
+               "A discount can signal a bargain or a business the market has doubts about — the rest of this report helps judge which. "
+               if rel < 0.8 else
+               "The market is pricing it much like a typical peer. ")
+            + (f"The forward P/E of {fpe:.1f}× implies analysts expect earnings to "
+               f"{'grow' if fpe < tpe else 'shrink'} next year." if fpe else ""))
+    elif tpe:
+        band = ("a premium multiple — the market is paying up for expected growth"
+                if tpe >= 28 else
+                "a moderate multiple, broadly in line with long-run market averages"
+                if tpe >= 14 else
+                "a low multiple — the market is pricing in slow growth or elevated risk")
+        st.markdown(
+            f"At {tpe:.1f}× trailing earnings, {ticker} trades at {band} "
+            f"(the S&P 500 has historically averaged roughly 15–20×). "
+            + (f"The forward P/E of {fpe:.1f}× implies analysts expect earnings to "
+               f"{'grow' if fpe < tpe else 'shrink'} next year." if fpe else ""))
+
+    # ── Industry & competitive position ──
+    st.subheader("Industry & competitive position")
+    latest_all = latest_per_ticker(df)
+    sec_latest = latest_all[latest_all["sector"] == sector].copy()
+    pos_lines = []
+    if len(sec_latest) > 1 and rev:
+        sec_rank = sec_latest.sort_values("revenue_m", ascending=False).reset_index(drop=True)
+        rank_idx = sec_rank.index[sec_rank["ticker"] == ticker]
+        if len(rank_idx):
+            rank = int(rank_idx[0]) + 1
+            n = len(sec_rank)
+            share = rev / float(sec_rank["revenue_m"].sum()) * 100
+            tier = ("one of the giants of" if rank <= max(3, n // 10) else
+                    "a mid-sized player in" if rank <= n // 2 else
+                    "a smaller player in")
+            pos_lines.append(
+                f"By revenue, {name} ranks **#{rank} of {n}** S&P 500 companies in {sector}, "
+                f"making it {tier} its sector with roughly {share:.1f}% of the group's combined revenue.")
+    gm_med = med.get("gross_margin_pct")
+    if gm is not None and gm_med:
+        if gm > gm_med * 1.1:
+            pos_lines.append(f"Its gross margin ({gm:.0f}% vs. a {gm_med:.0f}% sector median) suggests real pricing power — a sign of differentiation, brand strength or scale advantages competitors can't easily copy.")
+        elif gm < gm_med * 0.9:
+            pos_lines.append(f"Its gross margin ({gm:.0f}% vs. a {gm_med:.0f}% sector median) points to a more commoditized position, competing more on price than differentiation.")
+        else:
+            pos_lines.append(f"Its gross margin ({gm:.0f}%) is close to the sector median ({gm_med:.0f}%), suggesting a competitive position typical of its peers.")
+    if prof.get("industry"):
+        pos_lines.append(f"Within {sector}, Yahoo Finance classifies it under **{prof['industry']}**.")
+    for line in pos_lines:
+        st.markdown(line)
+    if not pos_lines:
+        st.caption("Not enough sector data to assess competitive position.")
+
+    # ── Recent news & sentiment ──
+    st.subheader("Recent news & sentiment")
+    news = fetch_company_news(ticker)
+    if news:
+        scores = [score_headline(n["title"]) for n in news]
+        pos_n, neg_n = sum(1 for s in scores if s > 0), sum(1 for s in scores if s < 0)
+        neu_n = len(scores) - pos_n - neg_n
+        overall = ("leaning positive" if pos_n > neg_n else
+                   "leaning negative" if neg_n > pos_n else "mixed / neutral")
+        st.markdown(
+            f"Across the {len(news)} most recent headlines, coverage is **{overall}** "
+            f"({pos_n} positive · {neu_n} neutral · {neg_n} negative, scored by keyword analysis of titles).")
+        badge = {1: ("Positive", "#34d399"), 0: ("Neutral", "#94a3b8"), -1: ("Negative", "#fb7185")}
+        for n, s in zip(news[:8], scores):
+            lbl, bc = badge[s]
+            title_html = (f"<a href='{n['url']}' target='_blank' style='color:#c7d2e0;text-decoration:none'>{n['title']}</a>"
+                          if n["url"] else n["title"])
+            meta = " · ".join(x for x in (n["source"], n["published"]) if x)
+            st.markdown(f"""
+            <div style="padding:0.45rem 0;border-bottom:1px solid rgba(148,163,184,.1)">
+              <span style="display:inline-block;min-width:64px;text-align:center;font-size:0.66rem;font-weight:700;
+                     color:{bc};border:1px solid {rgba(bc, 0.4)};border-radius:999px;padding:0.1rem 0.5rem;margin-right:0.5rem">{lbl}</span>
+              <span style="font-size:0.9rem">{title_html}</span>
+              <div style="font-size:0.7rem;color:#64748b;margin-left:72px">{meta}</div>
+            </div>""", unsafe_allow_html=True)
+        st.caption("Headline sentiment is a simple keyword score — read the articles before drawing conclusions.")
+    else:
+        st.caption("No recent news available from Yahoo Finance for this ticker.")
+
+
 # ── Sidebar navigation ────────────────────────────────────────────────────────
 def main() -> None:
     setup_page()
@@ -1788,6 +2332,7 @@ def main() -> None:
         "Overview":         "overview",
         "Stock Screener":   "screener",
         "Stock Detail":     "stock",
+        "Company Report":   "report",
         "Risk Analysis":    "risk",
     }
     if role in ("professor", "admin") and not DEMO_MODE:
@@ -1837,6 +2382,8 @@ def main() -> None:
         page_screener(df_view)
     elif page == "stock":
         page_stock_detail(df_view)
+    elif page == "report":
+        page_company_report(df_view)
     elif page == "risk":
         page_risk_analysis(df_view)
     elif page == "students":
