@@ -36,8 +36,12 @@
     "TJX",
     "V",
     "WMT",
-    "WELL"
+    "WELL",
+    "CRS",
+    "FIX",
+    "EXP",
+    "MELI"
   ],
   "updated_by": "hchen",
-  "updated_at": "2026-07-30T18:41:54.282697+00:00"
+  "updated_at": "2026-07-30T18:43:20.144455+00:00"
 }
