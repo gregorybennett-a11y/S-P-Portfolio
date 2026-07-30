@@ -2319,9 +2319,12 @@ def page_company_report(df: pd.DataFrame) -> None:
     pb = _num(prof.get("priceToBook"))
     ps = _num(prof.get("priceToSalesTrailing12Months"))
     ev_eb = _num(prof.get("enterpriseToEbitda"))
-    dyv = _num(prof.get("dividendYield"))
-    if dyv is not None and dyv < 1:      # yfinance sometimes returns 0.0065 vs 0.65
-        dyv *= 100
+    # Yield from actual trailing payouts — avoids yfinance's fraction/percent ambiguity
+    dyv = compute_dividend_yield(ticker, price)
+    if dyv is None:
+        dyv = _num(prof.get("dividendYield"))
+        if dyv is not None and dyv > 15:   # implausible for S&P 500 → wrong unit
+            dyv /= 100
     # Yahoo .info is often unavailable on cloud hosts — compute what we can
     # from latest 10-K fundamentals + live price / market cap instead
     mc_m = (mc / 1e6) if mc else None
@@ -2338,8 +2341,6 @@ def page_company_report(df: pd.DataFrame) -> None:
         used_fallback = used_fallback or ev_eb is not None
     if dyv is None:
         dyv = _num(last.get("dividend_yield_pct"))
-        if dyv is None:
-            dyv = compute_dividend_yield(ticker, price)
         used_fallback = used_fallback or dyv is not None
     v1, v2, v3, v4, v5, v6 = st.columns(6)
     v1.metric("P/E (trailing)", f"{tpe:.1f}×" if tpe else "—")
