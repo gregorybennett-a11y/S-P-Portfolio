@@ -1754,6 +1754,19 @@ def load_descriptions() -> dict:
     return {}
 
 
+@st.cache_data(ttl=86400, show_spinner=False)
+def load_company_names() -> dict:
+    """Ticker → company name, from the SEC CIK map (works offline)."""
+    p = Path("sp500/ticker_cik_map.json")
+    if p.exists():
+        try:
+            m = json.loads(p.read_text(encoding="utf-8"))
+            return {t: v.get("company", t) for t, v in m.items()}
+        except Exception:
+            pass
+    return {}
+
+
 @st.cache_data(ttl=3600, show_spinner=False, max_entries=300)
 def fetch_company_profile(ticker: str) -> dict:
     """Slim slice of yfinance .info — profile, market and valuation fields."""
@@ -1770,7 +1783,20 @@ def fetch_company_profile(ticker: str) -> dict:
         "ebitda", "totalDebt", "totalCash", "currentPrice", "debtToEquity",
         "returnOnEquity", "profitMargins", "revenueGrowth",
     ]
-    return {k: info.get(k) for k in keys}
+    prof = {k: info.get(k) for k in keys}
+    # .info is often rate-limited on cloud hosts; fast_info usually still works
+    try:
+        fi = yf.Ticker(ticker).fast_info
+        for pk, fk in (("fiftyTwoWeekHigh", "year_high"), ("fiftyTwoWeekLow", "year_low"),
+                       ("averageVolume", "three_month_average_volume"),
+                       ("marketCap", "market_cap"), ("currentPrice", "last_price")):
+            if prof.get(pk) is None:
+                v = getattr(fi, fk, None)
+                if v:
+                    prof[pk] = v
+    except Exception:
+        pass
+    return prof
 
 
 @st.cache_data(ttl=3600, show_spinner=False, max_entries=300)
@@ -1921,8 +1947,10 @@ def analyze_strengths_weaknesses(tdf: pd.DataFrame, med: dict) -> tuple[list, li
         avg_g = float(rg_rows["rev_growth_pct"].mean())
         if avg_g >= 10:
             strengths.append(f"**Strong top-line growth** — revenue has grown ~{avg_g:.0f}% a year on average over the last {len(rg_rows)} reported years.")
-        elif avg_g < 0:
-            weaknesses.append(f"**Shrinking revenue** — sales have declined ~{abs(avg_g):.0f}% a year on average over the last {len(rg_rows)} reported years.")
+        elif avg_g < -0.5:
+            weaknesses.append(f"**Shrinking revenue** — sales have declined ~{abs(avg_g):.1f}% a year on average over the last {len(rg_rows)} reported years.")
+        elif avg_g < 1.5:
+            weaknesses.append(f"**Stagnant revenue** — sales have been roughly flat ({avg_g:+.1f}% a year on average) over the last {len(rg_rows)} reported years.")
 
     fcf = _num(last.get("free_cash_flow_m"))
     rev = _num(last.get("revenue_m"))
@@ -1935,7 +1963,9 @@ def analyze_strengths_weaknesses(tdf: pd.DataFrame, med: dict) -> tuple[list, li
 
     roe = _num(last.get("roe_pct"))
     if roe is not None:
-        if roe >= 20:
+        if roe >= 60:
+            strengths.append(f"**High returns on equity** — ROE of {roe:.0f}% is exceptional, though partly a product of buybacks shrinking the equity base (see weaknesses).")
+        elif roe >= 20:
             strengths.append(f"**High returns on equity** — ROE of {roe:.0f}% means shareholder capital is being put to work efficiently.")
         elif roe < 5:
             weaknesses.append(f"**Weak returns on equity** — ROE of {roe:.0f}% suggests capital is earning little for shareholders.")
@@ -1958,6 +1988,44 @@ def analyze_strengths_weaknesses(tdf: pd.DataFrame, med: dict) -> tuple[list, li
     dy = _num(last.get("dividend_yield_pct"))
     if dy is not None and dy >= 2.5:
         strengths.append(f"**Meaningful dividend** — a {dy:.1f}% yield returns cash to shareholders while they wait.")
+
+    # ── Soft "watch items" — every company has something worth monitoring ──
+    if len(weaknesses) < 2:
+        watch = []
+        if roe is not None and roe >= 60:
+            watch.append("**Thin equity base** — years of buybacks have shrunk stockholders' equity, which flatters ROE but leaves less book-value cushion in a downturn.")
+        else:
+            eq_rows = rows[rows["stockholders_equity_m"].notna()] if "stockholders_equity_m" in rows.columns else rows.iloc[0:0]
+            if len(eq_rows) >= 4:
+                eq_then, eq_now = float(eq_rows.iloc[-4]["stockholders_equity_m"]), float(eq_rows.iloc[-1]["stockholders_equity_m"])
+                if eq_then > 0 and eq_now < eq_then * 0.7:
+                    watch.append(f"**Shrinking equity base** — stockholders' equity has fallen from {fmt_m(eq_then)} to {fmt_m(eq_now)} over three years, reducing the balance-sheet cushion.")
+        rg_all = rows[rows["rev_growth_pct"].notna()]
+        if len(rg_all) >= 4:
+            recent = float(rg_all.iloc[-1]["rev_growth_pct"])
+            prior = float(rg_all.iloc[-4:-1]["rev_growth_pct"].mean())
+            if recent < prior - 3:
+                watch.append(f"**Slowing growth** — revenue grew {recent:.1f}% last year vs. a {prior:.1f}% average over the prior three years, so momentum is fading.")
+        gm_all = rows[rows["gross_margin_pct"].notna()]
+        if len(gm_all) >= 4:
+            gm_now, gm_then = float(gm_all.iloc[-1]["gross_margin_pct"]), float(gm_all.iloc[-4]["gross_margin_pct"])
+            if gm_now < gm_then - 2:
+                watch.append(f"**Margin compression** — gross margin has slipped from {gm_then:.0f}% to {gm_now:.0f}% over three years.")
+        if "total_debt_m" in rows.columns:
+            db_rows = rows[rows["total_debt_m"].notna()]
+            if len(db_rows) >= 4:
+                d_then, d_now = float(db_rows.iloc[-4]["total_debt_m"]), float(db_rows.iloc[-1]["total_debt_m"])
+                if d_then > 0 and d_now > d_then * 1.4:
+                    watch.append(f"**Rising debt load** — total debt has grown from {fmt_m(d_then)} to {fmt_m(d_now)} in three years.")
+        if rev is not None and rev >= 150_000:
+            watch.append(f"**Law of large numbers** — at {fmt_m(rev)} of revenue, each new % of growth is enormous in absolute terms; sustaining historical growth rates only gets harder from here.")
+        med_g = med.get("rev_growth_pct")
+        rg_last = _num(last.get("rev_growth_pct"))
+        if not watch and rg_last is not None and med_g is not None and rg_last < med_g:
+            watch.append(f"**Growth trails the sector** — {rg_last:.1f}% revenue growth vs. a {med_g:.1f}% sector median.")
+        weaknesses.extend(watch[:max(0, 3 - len(weaknesses))])
+    if not weaknesses:
+        weaknesses.append("**Expectations risk** — nothing in the reported numbers stands out as weak, which is itself a risk: strong execution is already priced in, so any stumble tends to be punished hard by the market.")
 
     return strengths, weaknesses
 
@@ -1992,7 +2060,8 @@ def page_company_report(df: pd.DataFrame) -> None:
     with st.spinner("Loading company profile…"):
         prof = fetch_company_profile(ticker)
         quote = fetch_live_price(ticker)
-    name = prof.get("longName") or prof.get("shortName") or ticker
+    name = (prof.get("longName") or prof.get("shortName")
+            or load_company_names().get(ticker) or ticker)
     med = _sector_medians(df, sector)
 
     # ── Header ──
@@ -2000,7 +2069,7 @@ def page_company_report(df: pd.DataFrame) -> None:
     with hdr:
         st.markdown(f"""
         <div style="border-left:4px solid {color};padding-left:0.75rem;margin-bottom:0.5rem">
-          <div style="font-size:1.6rem;font-weight:700;color:#e6edf3;letter-spacing:-0.02em">{name} <span style="color:#8b949e;font-weight:500">({ticker})</span></div>
+          <div style="font-size:1.6rem;font-weight:700;color:#e6edf3;letter-spacing:-0.02em">{name}{f' <span style="color:#8b949e;font-weight:500">({ticker})</span>' if name != ticker else ''}</div>
           <div style="font-size:0.8rem;color:#8b949e;margin-top:0.15rem">{sector}{' · ' + prof['industry'] if prof.get('industry') else ''}</div>
         </div>""", unsafe_allow_html=True)
     with pxc:
@@ -2183,6 +2252,20 @@ def page_company_report(df: pd.DataFrame) -> None:
     dyv = _num(prof.get("dividendYield"))
     if dyv is not None and dyv < 1:      # yfinance sometimes returns 0.0065 vs 0.65
         dyv *= 100
+    # Yahoo .info is often unavailable on cloud hosts — compute what we can
+    # from latest 10-K fundamentals + live price / market cap instead
+    mc_m = (mc / 1e6) if mc else None
+    used_fallback = False
+    if tpe is None and price and eps and eps > 0:
+        tpe, used_fallback = price / eps, True
+    if ps is None and mc_m and rev and rev > 0:
+        ps, used_fallback = mc_m / rev, True
+    eq_v = _num(last.get("stockholders_equity_m"))
+    if pb is None and mc_m and eq_v and eq_v > 0:
+        pb, used_fallback = mc_m / eq_v, True
+    if dyv is None:
+        dyv = _num(last.get("dividend_yield_pct"))
+        used_fallback = used_fallback or dyv is not None
     v1, v2, v3, v4, v5, v6 = st.columns(6)
     v1.metric("P/E (trailing)", f"{tpe:.1f}×" if tpe else "—")
     v2.metric("P/E (forward)", f"{fpe:.1f}×" if fpe else "—")
@@ -2190,6 +2273,8 @@ def page_company_report(df: pd.DataFrame) -> None:
     v4.metric("Price / Book", f"{pb:.1f}×" if pb else "—")
     v5.metric("EV / EBITDA", f"{ev_eb:.1f}×" if ev_eb else "—")
     v6.metric("Dividend yield", f"{dyv:.2f}%" if dyv is not None else "—")
+    if used_fallback:
+        st.caption("Some multiples computed from the latest 10-K fundamentals and live price.")
     med_pe = med.get("pe_ratio")
     if tpe and med_pe:
         rel = tpe / med_pe
