@@ -1197,7 +1197,15 @@ def page_stock_detail(df: pd.DataFrame) -> None:
 
 
 def _portfolio_builder(df: pd.DataFrame, existing: list[str]) -> None:
-    """Shared builder/editor UI: sector filter + multiselect + save."""
+    """Shared builder/editor UI: sector filter + multiselect + bulk paste + save."""
+    # Flash message from a bulk add on the previous run
+    msg = st.session_state.pop("pf_bulk_msg", None)
+    if msg:
+        added, total, unk = msg
+        st.success(f"Bulk add complete — {added} new ticker(s) added, portfolio now has {total}.")
+        if unk:
+            st.caption("Skipped (not in dataset): " + ", ".join(unk))
+
     sectors = ["All Sectors"] + sorted(df["sector"].unique())
     sel_sector = st.selectbox("Filter by sector", sectors, key="pf_sector_filter")
 
@@ -1216,6 +1224,41 @@ def _portfolio_builder(df: pd.DataFrame, existing: list[str]) -> None:
         placeholder="Type a ticker, e.g. AAPL",
         key="pf_picker",
     )
+
+    with st.expander("Bulk add from a pasted list"):
+        st.caption("Paste tickers separated by spaces, commas, or new lines — "
+                   "extra text (company names, prices, country codes) is ignored.")
+        raw = st.text_area("Ticker list", key="pf_bulk_text", height=110,
+                           placeholder="AAPL, MSFT, NVDA …")
+        if st.button("Add all to portfolio", key="pf_bulk_add"):
+            import re as _re
+            valid = set(get_all_tickers(df))
+            alias = {"GOOG": "GOOGL", "BRK.B": "BRK-B", "BRK/B": "BRK-B", "BF.B": "BF-B"}
+            noise = {"US", "CN", "LN", "GR", "JP", "USD", "NPV", "ADR", "INC",
+                     "CO", "CORP", "PLC", "SA", "NEW", "COM", "CL", "A", "B", "C"}
+            tokens = [w.strip(".,;:()[]").upper()
+                      for w in _re.split(r"[\s,;]+", raw or "") if w.strip()]
+            found, unknown = [], []
+            for tok in tokens:
+                tok = alias.get(tok, tok)
+                if tok in valid and tok not in found:
+                    found.append(tok)
+                elif (tok not in valid and tok not in noise and tok not in unknown
+                      and _re.fullmatch(r"[A-Z]{1,5}([.\-][A-Z])?", tok)):
+                    unknown.append(tok)
+            if found:
+                merged = sorted(set(existing) | set(found))
+                if save_portfolio(merged):
+                    st.session_state["pf_bulk_msg"] = (
+                        len(set(found) - set(existing)), len(merged), unknown)
+                    st.session_state.pop("pf_picker", None)
+                    st.rerun()
+                else:
+                    st.error("Could not save the portfolio — check the GitHub storage connection.")
+            elif unknown:
+                st.warning("None of those tickers are in the dataset: " + ", ".join(unknown))
+            else:
+                st.info("No tickers detected in the pasted text.")
 
     c1, c2 = st.columns([1, 1])
     if c1.button("Save Portfolio", type="primary", use_container_width=True):

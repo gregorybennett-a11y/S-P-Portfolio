@@ -574,6 +574,12 @@
     "company": "Salesforce",
     "last_10k": "2026-03-02"
   },
+  "CRS": {
+    "cik": "0000017843",
+    "company": "Carpenter Technology",
+    "last_10k": "2000-01-01",
+    "sector": "Materials"
+  },
   "CRWD": {
     "cik": "0001535527",
     "company": "CrowdStrike",
@@ -874,6 +880,12 @@
     "company": "Expand Energy",
     "last_10k": "2026-02-18"
   },
+  "EXP": {
+    "cik": "0000918646",
+    "company": "Eagle Materials",
+    "last_10k": "2000-01-01",
+    "sector": "Materials"
+  },
   "EXPD": {
     "cik": "0000746515",
     "company": "Expeditors International",
@@ -943,6 +955,12 @@
     "cik": "0000035527",
     "company": "Fifth Third Bancorp",
     "last_10k": "2026-02-24"
+  },
+  "FIX": {
+    "cik": "0001035983",
+    "company": "Comfort Systems USA",
+    "last_10k": "2000-01-01",
+    "sector": "Industrials"
   },
   "FOXA": {
     "cik": "0001754301",
@@ -1478,6 +1496,12 @@
     "cik": "0001613103",
     "company": "Medtronic",
     "last_10k": "2025-06-20"
+  },
+  "MELI": {
+    "cik": "0001099590",
+    "company": "MercadoLibre",
+    "last_10k": "2000-01-01",
+    "sector": "Consumer Discretionary"
   },
   "MET": {
     "cik": "0001099219",

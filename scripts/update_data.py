@@ -119,7 +119,29 @@ def fetch_ticker_financials(ticker: str, cik: str, year: int) -> dict | None:
         return None
     facts = data.get("facts", {}).get("us-gaap", {})
     time.sleep(CALL_DELAY)
+    return build_row_from_facts(facts, ticker, year)
 
+
+BACKFILL_YEARS = list(range(2015, 2026))
+
+
+def backfill_ticker_history(ticker: str, cik: str) -> list[dict]:
+    """Full multi-year history for a ticker new to the CSV — one companyfacts call."""
+    data = edgar_get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json")
+    if not data:
+        return []
+    log.info(f"    entity: {data.get('entityName')}")
+    facts = data.get("facts", {}).get("us-gaap", {})
+    time.sleep(CALL_DELAY)
+    rows = []
+    for year in BACKFILL_YEARS:
+        row = build_row_from_facts(facts, ticker, year)
+        if row:
+            rows.append(row)
+    return rows
+
+
+def build_row_from_facts(facts: dict, ticker: str, year: int) -> dict | None:
     row = {"ticker": ticker, "year": year}
     found_any = False
     for col, concepts in CONCEPT_MAP.items():
@@ -163,6 +185,20 @@ def main(limit: int | None = None) -> int:
     log.info(f"Checking {len(tickers)} tickers for new 10-K filings ...")
 
     new_rows, updated = [], []
+
+    # ── Backfill: tickers in the CIK map with no rows in the CSV yet ──
+    existing_tickers = set(df["ticker"].unique())
+    for ticker in [t for t in tickers if t not in existing_tickers]:
+        log.info(f"Backfilling full history for new ticker {ticker} ...")
+        rows = backfill_ticker_history(ticker, cik_map[ticker]["cik"])
+        sector = cik_map[ticker].get("sector") or "Other"
+        for r in rows:
+            r["sector"] = sector
+        if rows:
+            new_rows.extend(rows)
+            updated.append(ticker)
+            log.info(f"  {ticker}: {len(rows)} fiscal years backfilled")
+
     for i, ticker in enumerate(tickers, 1):
         cik = cik_map[ticker]["cik"]
         filing = get_latest_10k_filing(cik)
@@ -176,7 +212,7 @@ def main(limit: int | None = None) -> int:
         log.info(f"  [{i}/{len(tickers)}] {ticker}: new 10-K filed {filing['filed_date']} (FY{year})")
         row = fetch_ticker_financials(ticker, cik, year)
         if row:
-            row["sector"] = sector_map.get(ticker, "Other")
+            row["sector"] = sector_map.get(ticker) or cik_map[ticker].get("sector") or "Other"
             new_rows.append(row)
             seen[ticker] = filing["filed_date"]
             updated.append(ticker)
