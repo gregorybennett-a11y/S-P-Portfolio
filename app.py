@@ -1799,6 +1799,74 @@ def fetch_company_profile(ticker: str) -> dict:
     return prof
 
 
+@st.cache_data(ttl=86400, show_spinner=False, max_entries=300)
+def compute_beta(ticker: str) -> float | None:
+    """Beta vs. S&P 500 from 1y of daily closes — works where .info is blocked."""
+    try:
+        data = yf.download([ticker, "^GSPC"], period="1y", interval="1d",
+                           progress=False, threads=True)["Close"].dropna()
+        if len(data) < 60:
+            return None
+        rets = data.pct_change().dropna()
+        var = float(rets["^GSPC"].var())
+        if not var:
+            return None
+        return float(rets[ticker].cov(rets["^GSPC"]) / var)
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=86400, show_spinner=False, max_entries=300)
+def compute_dividend_yield(ticker: str, price: float | None) -> float | None:
+    """Trailing-12-month dividends ÷ price, from the dividend-history endpoint."""
+    if not price:
+        return None
+    try:
+        div = yf.Ticker(ticker).dividends
+        if div is None or div.empty:
+            return 0.0
+        last12 = float(div[div.index >= (div.index.max() - pd.Timedelta(days=365))].sum())
+        return last12 / price * 100
+    except Exception:
+        return None
+
+
+@st.cache_data(ttl=86400, show_spinner=False, max_entries=300)
+def compute_ev_ebitda(ticker: str, market_cap: float | None) -> float | None:
+    """EV / EBITDA from the statement endpoints (cloud-safe). EV = mcap + debt − cash."""
+    if not market_cap:
+        return None
+    try:
+        t = yf.Ticker(ticker)
+        inc = t.income_stmt
+        if inc is None or inc.empty or "EBITDA" not in inc.index:
+            return None
+        eb = inc.loc["EBITDA"].dropna()
+        if eb.empty or float(eb.iloc[0]) <= 0:
+            return None
+        ebitda = float(eb.iloc[0])
+        debt = cash = 0.0
+        try:
+            bs = t.balance_sheet
+            if bs is not None and not bs.empty:
+                if "Total Debt" in bs.index:
+                    v = bs.loc["Total Debt"].dropna()
+                    if len(v):
+                        debt = float(v.iloc[0])
+                for lbl in ("Cash Cash Equivalents And Short Term Investments",
+                            "Cash And Cash Equivalents"):
+                    if lbl in bs.index:
+                        v = bs.loc[lbl].dropna()
+                        if len(v):
+                            cash = float(v.iloc[0])
+                            break
+        except Exception:
+            pass
+        return (market_cap + debt - cash) / ebitda
+    except Exception:
+        return None
+
+
 @st.cache_data(ttl=3600, show_spinner=False, max_entries=300)
 def fetch_interest_coverage(ticker: str) -> pd.DataFrame | None:
     """Interest coverage (EBITDA / interest expense) per fiscal year.
@@ -2117,6 +2185,8 @@ def page_company_report(df: pd.DataFrame) -> None:
     mc = prof.get("marketCap")
     c4.metric("Market cap", fmt_m(mc / 1e6) if mc else "—")
     beta = _num(prof.get("beta"))
+    if beta is None:
+        beta = compute_beta(ticker)
     c5.metric("Beta", f"{beta:.2f}" if beta is not None else "—")
     if price and lo and hi and hi > lo:
         pos = max(0.0, min(1.0, (price - lo) / (hi - lo)))
@@ -2263,8 +2333,13 @@ def page_company_report(df: pd.DataFrame) -> None:
     eq_v = _num(last.get("stockholders_equity_m"))
     if pb is None and mc_m and eq_v and eq_v > 0:
         pb, used_fallback = mc_m / eq_v, True
+    if ev_eb is None and mc:
+        ev_eb = compute_ev_ebitda(ticker, mc)
+        used_fallback = used_fallback or ev_eb is not None
     if dyv is None:
         dyv = _num(last.get("dividend_yield_pct"))
+        if dyv is None:
+            dyv = compute_dividend_yield(ticker, price)
         used_fallback = used_fallback or dyv is not None
     v1, v2, v3, v4, v5, v6 = st.columns(6)
     v1.metric("P/E (trailing)", f"{tpe:.1f}×" if tpe else "—")
