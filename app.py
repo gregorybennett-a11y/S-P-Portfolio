@@ -1773,7 +1773,7 @@ def fetch_company_profile(ticker: str) -> dict:
     try:
         info = yf.Ticker(ticker).info or {}
     except Exception:
-        return {}
+        info = {}          # .info often raises on cloud hosts — fall through to fast_info
     keys = [
         "longName", "shortName", "longBusinessSummary", "sector", "industry",
         "website", "fullTimeEmployees", "city", "state", "country",
