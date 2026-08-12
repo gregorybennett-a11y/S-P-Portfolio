@@ -469,12 +469,12 @@
     "ZBH": "2026-02-20",
     "ZBRA": "2026-02-12",
     "ZTS": "2026-02-12",
-    "CRS": "2025-08-12",
+    "CRS": "2026-08-12",
     "EXP": "2026-05-19",
     "FIX": "2026-02-19",
     "MELI": "2026-02-25",
     "STX": "2026-08-04"
   },
   "note": "Tracks last processed 10-K filing date per ticker for scripts/update_data.py",
-  "last_run": "2026-08-11T13:45:52.762559+00:00"
+  "last_run": "2026-08-12T21:06:33.460031+00:00"
 }
